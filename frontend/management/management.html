@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Management portal — PharmaCare+</title>
+  <link rel="stylesheet" href="/static/management/management.css" />
+</head>
+<body>
+
+  <header class="mobile-bar">
+    <button class="burger" type="button" id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <div class="side-brand">
+      <span class="side-mark" aria-hidden="true"></span>
+      <span>PharmaCare+</span>
+    </div>
+  </header>
+
+  <div class="nav-backdrop" id="navBackdrop"></div>
+
+  <div class="portal">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="side-brand">
+        <span class="side-mark" aria-hidden="true"></span>
+        <span>PharmaCare+</span>
+      </div>
+
+      <nav class="side-nav" id="sideNav">
+        <button type="button" class="active" data-panel="home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 10.4 12 4l8.4 6.4v8.2a1.6 1.6 0 0 1-1.6 1.6H5.2a1.6 1.6 0 0 1-1.6-1.6Z"/><path d="M9.4 20.2v-6.4h5.2v6.4"/></svg>
+          <span data-i18n="nav.home">Home</span>
+        </button>
+        <button type="button" data-panel="accounts">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M3 19.4a6 6 0 0 1 12 0"/><path d="M16.5 7.2h4.8M18.9 4.8v4.8"/></svg>
+          <span data-i18n="nav.accounts">Accounts</span>
+        </button>
+        <button type="button" data-panel="support">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20.4 12a8.4 8.4 0 1 0-3.3 6.7v2.1l-3.4-1.6"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.4 2.3v1.3"/><path d="M12.2 16.1h.01"/></svg>
+          <span data-i18n="nav.support">Support</span>
+        </button>
+        <button type="button" data-panel="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M19.6 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-2.87 1.2V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-2.97-1.14l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 3.1 14H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.14-2.97l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 10 4.1V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.97 1.14l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 20.9 10H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.3 1Z"/></svg>
+          <span data-i18n="nav.settings">Settings</span>
+        </button>
+      </nav>
+
+      <div class="side-foot">
+        <div class="side-who">
+          <div class="side-user">O. Hlalethwa</div>
+          <div class="side-role">IT support · DGMH-IT-0001</div>
+        </div>
+        <button class="sign-out" type="button" id="signOut">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.4 16.6 19 12l-4.6-4.6"/><path d="M19 12H8.6"/><path d="M11.4 4.4H6.2a1.8 1.8 0 0 0-1.8 1.8v11.6a1.8 1.8 0 0 0 1.8 1.8h5.2"/></svg>
+          <span data-i18n="action.signout">Sign out</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="content">
+
+      <!-- ---------- HOME ---------- -->
+      <section class="panel active" data-panel="home">
+        <div class="panel-head">
+          <h1 data-i18n="home.title">System overview</h1>
+          <p data-i18n="home.sub">Accounts, daily activity and storage across the platform.</p>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat">
+            <strong id="statAccounts">0</strong>
+            <span data-i18n="stat.accounts">Staff accounts</span>
+            <span class="delta" id="statAccountsDelta"></span>
+          </div>
+          <div class="stat">
+            <strong id="statToday">0</strong>
+            <span data-i18n="stat.today">Signed in today</span>
+            <span class="delta" id="statTodayDelta"></span>
+          </div>
+          <div class="stat">
+            <strong id="statFiles">0</strong>
+            <span data-i18n="stat.files">Patient files</span>
+            <span class="delta" id="statFilesDelta"></span>
+          </div>
+          <div class="stat">
+            <strong id="statScreens">0</strong>
+            <span data-i18n="stat.screens">Prescriptions screened today</span>
+            <span class="delta" id="statScreensDelta"></span>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <h3 data-i18n="chart.usage">Daily activity</h3>
+            <p class="card-sub" data-i18n="chart.usageSub">Prescriptions screened over the last 14 days</p>
+            <div id="lineChart"></div>
+          </div>
+
+          <div class="card">
+            <h3 data-i18n="chart.storage">Storage</h3>
+            <p class="card-sub" data-i18n="chart.storageSub">Patient files, uploads and model data</p>
+            <div class="gauge-wrap">
+              <div id="gauge" style="width:100%;display:grid;place-items:center"></div>
+              <div class="gauge-read">
+                <strong id="gaugeValue">0%</strong>
+                <span id="gaugeCaption"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="card">
+            <h3 data-i18n="chart.roles">Accounts by role</h3>
+            <p class="card-sub" data-i18n="chart.rolesSub">Active accounts only</p>
+            <div style="display:grid;place-items:center"><div id="donut" style="width:100%;display:grid;place-items:center"></div></div>
+            <div class="legend" id="donutLegend"></div>
+          </div>
+
+          <div class="card">
+            <h3 data-i18n="chart.load">Workspace use this week</h3>
+            <p class="card-sub" data-i18n="chart.loadSub">Share of sign-ins per workspace</p>
+            <div id="barList" style="margin-top:16px"></div>
+          </div>
+
+          <div class="card">
+            <h3 data-i18n="chart.health">System health</h3>
+            <p class="card-sub" data-i18n="chart.healthSub">Checked a moment ago</p>
+            <div id="healthList" style="margin-top:4px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- ACCOUNTS ---------- -->
+      <section class="panel" data-panel="accounts">
+        <div class="panel-head">
+          <h1 data-i18n="accounts.title">Accounts</h1>
+          <p data-i18n="accounts.sub">Add, update and remove staff accounts. Staff cannot register themselves.</p>
+        </div>
+
+        <div class="toolbar">
+          <input type="search" id="searchInput" placeholder="Search by ID or name" data-i18n-ph="accounts.search" />
+          <select id="roleFilter">
+            <option value="" data-i18n="role.all">All roles</option>
+            <option value="admin">Admin</option>
+            <option value="doctor">Doctor</option>
+            <option value="pharmacist">Pharmacist</option>
+            <option value="researcher">Researcher</option>
+            <option value="it">IT support</option>
+          </select>
+          <button class="btn" type="button" id="addAccount" data-i18n="accounts.add">Add account</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="table.id">Staff ID</th>
+                <th data-i18n="table.name">Name</th>
+                <th data-i18n="table.role">Role</th>
+                <th data-i18n="table.status">Status</th>
+                <th data-i18n="table.last">Last sign in</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="accountRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ---------- SUPPORT ---------- -->
+      <section class="panel" data-panel="support">
+        <div class="panel-head">
+          <h1 data-i18n="support.title">Support</h1>
+          <p data-i18n="support.sub">Messages sent from the support section inside each workspace.</p>
+        </div>
+        <div id="ticketList"></div>
+      </section>
+
+      <!-- ---------- SETTINGS ---------- -->
+      <section class="panel" data-panel="settings">
+        <div class="panel-head">
+          <h1 data-i18n="settings.title">Settings</h1>
+          <p data-i18n="settings.sub">Applies to this portal and how figures are shown across it.</p>
+        </div>
+
+        <div class="settings-grid">
+          <div class="card">
+            <h3 data-i18n="settings.appearance">Appearance</h3>
+            <p class="card-sub" data-i18n="settings.appearanceSub">Ward screens are often dimmed at night.</p>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.theme">Theme</strong>
+                <span data-i18n="settings.themeSub">Light or dark across the portal</span>
+              </div>
+              <div class="segmented" id="themeToggle">
+                <button type="button" data-theme="light" class="active" data-i18n="settings.light">Light</button>
+                <button type="button" data-theme="dark" data-i18n="settings.dark">Dark</button>
+              </div>
+            </div>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.language">Language</strong>
+                <span data-i18n="settings.languageSub">Labels, stats and account details</span>
+              </div>
+              <select id="langSelect">
+                <option value="en">English</option>
+                <option value="af">Afrikaans</option>
+                <option value="zu">isiZulu</option>
+                <option value="nso">Sepedi</option>
+              </select>
+            </div>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.numbers">Number format</strong>
+                <span data-i18n="settings.numbersSub">How figures are written</span>
+              </div>
+              <select id="localeSelect">
+                <option value="en-ZA">South Africa (1 234,5)</option>
+                <option value="en-GB">United Kingdom (1,234.5)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 data-i18n="settings.access">Access and security</h3>
+            <p class="card-sub" data-i18n="settings.accessSub">Defaults applied to every account you issue.</p>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.forceChange">Force password change</strong>
+                <span data-i18n="settings.forceChangeSub">At first sign in on a new account</span>
+              </div>
+              <label class="switch"><input type="checkbox" id="setForceChange" checked /><span></span></label>
+            </div>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.timeout">Idle sign-out</strong>
+                <span data-i18n="settings.timeoutSub">Minutes before a shared screen locks</span>
+              </div>
+              <input type="number" id="setTimeout" value="20" min="5" max="120" step="5" style="width:88px" />
+            </div>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.audit">Keep an audit trail</strong>
+                <span data-i18n="settings.auditSub">Record who issued, changed or removed accounts</span>
+              </div>
+              <label class="switch"><input type="checkbox" id="setAudit" checked /><span></span></label>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 data-i18n="settings.storage">Storage and alerts</h3>
+            <p class="card-sub" data-i18n="settings.storageSub">When to warn you before space runs out.</p>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.threshold">Warn at</strong>
+                <span data-i18n="settings.thresholdSub">Percentage of storage used</span>
+              </div>
+              <input type="number" id="setThreshold" value="85" min="50" max="99" step="5" style="width:88px" />
+            </div>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.retention">Keep patient files for</strong>
+                <span data-i18n="settings.retentionSub">Years before archiving</span>
+              </div>
+              <select id="setRetention">
+                <option value="6">6 years</option>
+                <option value="10" selected>10 years</option>
+                <option value="0">Keep indefinitely</option>
+              </select>
+            </div>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.email">Email me alerts</strong>
+                <span data-i18n="settings.emailSub">Storage warnings and failed sign-in spikes</span>
+              </div>
+              <label class="switch"><input type="checkbox" id="setEmail" /><span></span></label>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:18px">
+          <button class="btn" type="button" id="saveSettings" data-i18n="settings.save">Save settings</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+<!-- ==================== ACCOUNT MODAL ==================== -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h2 id="modalTitle">Add account</h2>
+    <p id="modalSub">The ID is generated from the role. Hand the details over in person.</p>
+
+    <div class="form-grid">
+      <div class="field full">
+        <label for="fName" data-i18n="form.name">Full name</label>
+        <input id="fName" type="text" placeholder="e.g. T. Mokoena" />
+      </div>
+
+      <div class="field">
+        <label for="fRole" data-i18n="form.role">Role</label>
+        <select id="fRole">
+          <option value="doctor">Doctor</option>
+          <option value="pharmacist">Pharmacist</option>
+          <option value="researcher">Researcher</option>
+          <option value="admin">Admin</option>
+          <option value="it">IT support</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="fFacility" data-i18n="form.facility">Facility</label>
+        <input id="fFacility" type="text" value="Dr George Mukhari Academic Hospital" />
+      </div>
+
+      <div class="field full">
+        <label for="fId" data-i18n="form.id">Staff ID</label>
+        <div class="with-button">
+          <input id="fId" type="text" disabled />
+          <button class="mini-btn" type="button" id="regenId" data-i18n="form.newId">Generate again</button>
+        </div>
+        <p class="hint" id="idHint">Generated automatically from the role.</p>
+      </div>
+
+      <div class="field full" id="passwordField">
+        <label for="fPassword" data-i18n="form.password">Starter password</label>
+        <div class="with-button">
+          <input id="fPassword" type="text" />
+          <button class="mini-btn" type="button" id="regenPassword" data-i18n="form.newPassword">Generate again</button>
+        </div>
+        <p class="hint" data-i18n="form.passwordHint">Shown once. The person must change it at first sign in.</p>
+      </div>
+
+      <div class="field">
+        <label for="fEmail" data-i18n="form.email">Email</label>
+        <input id="fEmail" type="email" placeholder="Optional" />
+      </div>
+
+      <div class="field">
+        <label for="fReg" data-i18n="form.reg">HPCSA / SAPC number</label>
+        <input id="fReg" type="text" placeholder="Optional" />
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn" type="button" id="saveAccount" data-i18n="form.create">Create account</button>
+      <button class="btn ghost" type="button" id="closeModal" data-i18n="form.cancel">Cancel</button>
+    </div>
+
+    <div class="issued" id="issuedCard" style="display:none">
+      <h3 data-i18n="issued.title">Account created</h3>
+      <p data-i18n="issued.sub">Hand these over now. The password is not shown again.</p>
+      <div class="cred-row"><span data-i18n="table.id">Staff ID</span><code id="issuedId">—</code></div>
+      <div class="cred-row"><span data-i18n="form.password">Password</span><code id="issuedPassword">—</code></div>
+      <button class="btn ghost" type="button" id="doneIssuing" style="margin-top:12px" data-i18n="issued.done">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+  <script src="/static/management/management.js"></script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>IT support sign in — PharmaCare+</title>
+  <link rel="stylesheet" href="/static/management/management_login.css" />
+</head>
+<body>
+
+  <div class="auth">
+    <div class="auth-panel">
+      <div class="lg-brand">
+        <span class="lg-brand-mark" aria-hidden="true"></span>
+        <span>PharmaCare+</span>
+      </div>
+
+      <div class="form-wrap">
+        <div class="form-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.4" width="18" height="12.4" rx="2.4"/><path d="M8 20.4h8M12 16.8v3.6"/></svg>
+          <h2>IT support sign in</h2>
+          <p>Restricted to system administrators</p>
+        </div>
+
+        <form class="auth-form" id="authForm" novalidate>
+          <div class="field">
+            <label for="userId">Support ID</label>
+            <input id="userId" name="userId" type="text" placeholder="Support ID"
+                   autocomplete="username" autocapitalize="characters" spellcheck="false" required />
+          </div>
+
+          <div class="field">
+            <label for="password">Password</label>
+            <div class="password-wrap">
+              <input id="password" name="password" type="password" placeholder="Password"
+                     autocomplete="current-password" required />
+              <button class="toggle-password" type="button" id="togglePassword"
+                      aria-label="Show password" aria-pressed="false"></button>
+            </div>
+          </div>
+
+          <button class="submit" type="submit" id="submitButton">Sign in</button>
+          <p class="auth-error" id="authError" role="alert"></p>
+        </form>
+      </div>
+    </div>
+
+    <div class="auth-visual">
+      <div class="visual-mark" aria-hidden="true"></div>
+      <h1>PharmaCare+</h1>
+      <p>Issue staff accounts, revoke access and keep the system healthy.</p>
+    </div>
+  </div>
+
+  <script src="/static/management/management_login.js"></script>
+</body>
+</html>

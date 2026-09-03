@@ -35,7 +35,6 @@
       overflow-x: hidden;
     }
 
-    body.menu-open { overflow: hidden; }
 
     a { color: inherit; text-decoration: none; }
     button, input, select { font: inherit; }
@@ -62,521 +61,7 @@
       transform-origin: left center;
     }
 
-    .cursor-dot,
-    .cursor-ring {
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: 3000;
-      pointer-events: none;
-      transform: translate3d(-100px, -100px, 0);
-    }
 
-    .cursor-dot {
-      width: 7px;
-      height: 7px;
-      margin: -3.5px 0 0 -3.5px;
-      border-radius: 50%;
-      background: var(--white);
-      mix-blend-mode: difference;
-    }
-
-    .cursor-ring {
-      width: 58px;
-      height: 58px;
-      margin: -29px 0 0 -29px;
-      border: 1px solid rgba(255,255,255,.9);
-      border-radius: 50%;
-      mix-blend-mode: difference;
-      transition: width .25s ease, height .25s ease, margin .25s ease, background .25s ease;
-    }
-
-    .cursor-ring.active {
-      width: 82px;
-      height: 82px;
-      margin: -41px 0 0 -41px;
-      background: var(--white);
-    }
-
-
-    body.auth-locked {
-      overflow: hidden;
-    }
-
-    body.auth-locked > header,
-    body.auth-locked > nav,
-    body.auth-locked > main,
-    body.auth-locked > footer,
-    body.auth-locked > .page-progress,
-    body.auth-locked > .cursor-dot,
-    body.auth-locked > .cursor-ring {
-      visibility: hidden;
-    }
-
-    .login-screen {
-      position: fixed;
-      inset: 0;
-      z-index: 5000;
-      display: grid;
-      grid-template-columns: minmax(0, 1.08fr) minmax(420px, .92fr);
-      min-height: 100dvh;
-      color: var(--paper);
-      background: var(--ink);
-      transition: opacity .65s var(--ease), visibility .65s ease;
-    }
-
-    .login-screen.is-hidden {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    .login-visual {
-      position: relative;
-      min-height: 100%;
-      padding: clamp(34px, 5vw, 78px);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      overflow: hidden;
-      background:
-        radial-gradient(circle at 78% 22%, rgba(215,229,143,.16), transparent 26%),
-        radial-gradient(circle at 28% 78%, rgba(186,208,193,.12), transparent 32%),
-        #102f27;
-    }
-
-    .login-visual::before,
-    .login-visual::after {
-      content: "";
-      position: absolute;
-      border: 1px solid rgba(255,255,255,.13);
-      border-radius: 50%;
-      animation: loginOrbit 12s linear infinite;
-    }
-
-    .login-visual::before {
-      width: min(54vw, 680px);
-      aspect-ratio: 1;
-      right: -18%;
-      top: 4%;
-    }
-
-    .login-visual::after {
-      width: min(34vw, 430px);
-      aspect-ratio: 1;
-      left: 12%;
-      bottom: -15%;
-      animation-direction: reverse;
-      animation-duration: 16s;
-    }
-
-    @keyframes loginOrbit {
-      to { transform: rotate(360deg); }
-    }
-
-    .login-brand,
-    .login-copy,
-    .login-security-note {
-      position: relative;
-      z-index: 2;
-    }
-
-    .login-brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 17px;
-      font-weight: 950;
-      letter-spacing: -.04em;
-    }
-
-    .login-brand .brand-mark { background: var(--lime); }
-    .login-brand .brand-mark::before,
-    .login-brand .brand-mark::after { background: var(--green); }
-
-    .login-copy {
-      max-width: 750px;
-    }
-
-    .login-copy .eyebrow { color: rgba(243,240,232,.62); }
-
-    .login-copy h1 {
-      margin: 18px 0 22px;
-      max-width: 760px;
-      font-size: clamp(58px, 8.7vw, 142px);
-      line-height: .78;
-      letter-spacing: -.075em;
-      text-transform: uppercase;
-    }
-
-    .login-copy h1 span {
-      display: block;
-    }
-
-    .login-copy h1 .outline {
-      color: transparent;
-      -webkit-text-stroke: 1.5px rgba(243,240,232,.75);
-    }
-
-    .login-copy p {
-      max-width: 580px;
-      margin: 0;
-      color: rgba(243,240,232,.68);
-      font-size: clamp(14px, 1.3vw, 18px);
-      line-height: 1.65;
-    }
-
-    .login-security-note {
-      max-width: 520px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: rgba(243,240,232,.55);
-      font-size: 11px;
-      line-height: 1.5;
-    }
-
-    .login-security-note span:first-child {
-      width: 36px;
-      height: 36px;
-      flex: 0 0 auto;
-      display: grid;
-      place-items: center;
-      border: 1px solid rgba(255,255,255,.16);
-      border-radius: 50%;
-      color: var(--lime);
-    }
-
-    .login-panel {
-      padding: clamp(26px, 5vw, 76px);
-      display: grid;
-      place-items: center;
-      color: var(--ink);
-      background: var(--paper);
-    }
-
-    .login-card {
-      width: min(100%, 560px);
-    }
-
-    .login-card-kicker {
-      margin-bottom: 14px;
-      color: var(--green);
-      font-size: 10px;
-      font-weight: 900;
-      letter-spacing: .13em;
-      text-transform: uppercase;
-    }
-
-    .login-card h2 {
-      margin: 0;
-      font-size: clamp(42px, 5vw, 70px);
-      line-height: .92;
-      letter-spacing: -.055em;
-    }
-
-    .login-card > p {
-      max-width: 470px;
-      margin: 18px 0 30px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.65;
-    }
-
-    .login-form {
-      display: grid;
-      gap: 16px;
-    }
-
-    .login-field {
-      display: grid;
-      gap: 8px;
-    }
-
-    .login-field label {
-      font-size: 9px;
-      font-weight: 900;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-    }
-
-    .login-field input {
-      width: 100%;
-      min-height: 58px;
-      padding: 0 17px;
-      border: 1px solid var(--line);
-      border-radius: 15px;
-      color: var(--ink);
-      background: rgba(255,255,255,.72);
-      outline: none;
-      transition: border-color .25s ease, box-shadow .25s ease, background .25s ease;
-    }
-
-    .login-field input:focus {
-      border-color: var(--green);
-      background: var(--white);
-      box-shadow: 0 0 0 4px rgba(21,63,50,.08);
-    }
-
-    .login-submit {
-      min-height: 60px;
-      margin-top: 4px;
-      border: 0;
-      border-radius: 16px;
-      color: var(--white);
-      background: var(--green);
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: transform .25s var(--ease), background .25s ease;
-    }
-
-    .login-submit:hover { transform: translateY(-2px); background: #0d3025; }
-
-    .login-error {
-      min-height: 18px;
-      margin: 0;
-      color: #8f2d24;
-      font-size: 11px;
-      font-weight: 750;
-    }
-
-    .demo-access {
-      margin-top: 24px;
-      padding: 18px;
-      border: 1px solid rgba(21,63,50,.14);
-      border-radius: 18px;
-      background: #e9eee8;
-    }
-
-    .demo-access-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .demo-access-top strong {
-      font-size: 10px;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-    }
-
-    .demo-access-top span {
-      padding: 5px 8px;
-      border-radius: 999px;
-      color: var(--green);
-      background: var(--lime);
-      font-size: 8px;
-      font-weight: 900;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-
-    .credential-row {
-      padding: 8px 0;
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      border-top: 1px solid rgba(17,18,15,.09);
-      font-size: 11px;
-    }
-
-    .credential-row span { color: var(--muted); }
-    .credential-row code { font-family: inherit; font-weight: 850; }
-
-    .demo-access small {
-      display: block;
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 9px;
-      line-height: 1.5;
-    }
-
-    .pharmacist-account {
-      justify-self: end;
-      position: relative;
-    }
-
-    .account-button {
-      min-height: 48px;
-      padding: 5px 7px 5px 5px;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      border: 1px solid rgba(17,18,15,.1);
-      border-radius: 999px;
-      background: rgba(255,255,255,.62);
-      cursor: pointer;
-      transition: transform .25s ease, background .25s ease;
-    }
-
-    .account-button:hover { transform: translateY(-2px); background: var(--white); }
-
-    .account-avatar {
-      width: 38px;
-      height: 38px;
-      display: grid;
-      place-items: center;
-      border-radius: 50%;
-      color: var(--white);
-      background: var(--green);
-      font-size: 10px;
-      font-weight: 950;
-      letter-spacing: .04em;
-    }
-
-    .account-copy {
-      display: grid;
-      gap: 2px;
-      text-align: left;
-    }
-
-    .account-copy strong { font-size: 10px; line-height: 1; }
-    .account-copy span { color: var(--muted); font-size: 8px; line-height: 1; }
-
-    .account-chevron {
-      width: 28px;
-      height: 28px;
-      display: grid;
-      place-items: center;
-      border-radius: 50%;
-      background: rgba(17,18,15,.06);
-      font-size: 12px;
-    }
-
-    .account-menu {
-      position: absolute;
-      top: calc(100% + 12px);
-      right: 0;
-      width: min(350px, calc(100vw - 36px));
-      padding: 16px;
-      border: 1px solid rgba(17,18,15,.1);
-      border-radius: 20px;
-      background: rgba(255,255,255,.97);
-      box-shadow: 0 22px 60px rgba(17,18,15,.16);
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(-8px);
-      transition: opacity .25s ease, transform .25s ease, visibility .25s ease;
-    }
-
-    .account-menu.open {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-    }
-
-    .account-profile-head {
-      padding-bottom: 14px;
-      display: grid;
-      grid-template-columns: 48px 1fr;
-      gap: 12px;
-      align-items: center;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .account-profile-head .account-avatar { width: 48px; height: 48px; }
-    .account-profile-head strong { display: block; font-size: 14px; }
-    .account-profile-head span { color: var(--muted); font-size: 10px; }
-
-    .account-detail-list {
-      padding: 10px 0;
-      display: grid;
-    }
-
-    .account-detail-row {
-      padding: 9px 0;
-      display: grid;
-      grid-template-columns: 105px 1fr;
-      gap: 12px;
-      border-bottom: 1px solid rgba(17,18,15,.07);
-      font-size: 9px;
-      line-height: 1.4;
-    }
-
-    .account-detail-row span { color: var(--muted); }
-    .account-detail-row strong { text-align: right; }
-
-    .account-demo-note {
-      margin: 10px 0 12px;
-      padding: 10px;
-      border-radius: 12px;
-      color: #6e551c;
-      background: #f7edcf;
-      font-size: 8px;
-      line-height: 1.5;
-    }
-
-    .signout-button {
-      width: 100%;
-      min-height: 42px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: transparent;
-      font-size: 9px;
-      font-weight: 900;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      cursor: pointer;
-    }
-
-    .welcome-toast {
-      position: fixed;
-      top: 104px;
-      right: 24px;
-      z-index: 4200;
-      width: min(390px, calc(100vw - 40px));
-      padding: 17px;
-      display: grid;
-      grid-template-columns: 42px 1fr auto;
-      gap: 12px;
-      align-items: start;
-      border: 1px solid rgba(255,255,255,.56);
-      border-radius: 18px;
-      color: var(--paper);
-      background: rgba(21,63,50,.96);
-      box-shadow: 0 24px 70px rgba(17,18,15,.24);
-      backdrop-filter: blur(16px);
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(-14px);
-      transition: opacity .35s ease, transform .35s var(--ease), visibility .35s ease;
-    }
-
-    .welcome-toast.show {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-    }
-
-    .welcome-toast-icon {
-      width: 42px;
-      height: 42px;
-      display: grid;
-      place-items: center;
-      border-radius: 13px;
-      color: var(--green);
-      background: var(--lime);
-      font-weight: 950;
-    }
-
-    .welcome-toast small {
-      display: block;
-      margin-bottom: 3px;
-      color: rgba(243,240,232,.58);
-      font-size: 8px;
-      font-weight: 900;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-    }
-
-    .welcome-toast strong { display: block; font-size: 13px; }
-    .welcome-toast p { margin: 4px 0 0; color: rgba(243,240,232,.68); font-size: 9px; line-height: 1.45; }
-    .welcome-toast button { border: 0; color: var(--paper); background: transparent; cursor: pointer; font-size: 17px; }
 
     .site-header {
       position: fixed;
@@ -642,6 +127,8 @@
       text-transform: uppercase;
     }
 
+    .nav-short { display: none; }
+
     .nav-links a {
       position: relative;
       padding: 10px 0;
@@ -684,57 +171,6 @@
     }
 
     .nav-cta:hover { transform: translateY(-2px); background: #0d3025; }
-
-    .menu-button {
-      display: none;
-      justify-self: end;
-      width: 44px;
-      height: 44px;
-      padding: 0;
-      border: 0;
-      border-radius: 50%;
-      background: var(--green);
-      cursor: pointer;
-    }
-
-    .menu-button span,
-    .menu-button::before,
-    .menu-button::after {
-      content: "";
-      display: block;
-      width: 18px;
-      height: 2px;
-      margin: 4px auto;
-      background: var(--white);
-      transition: transform .25s ease, opacity .25s ease;
-    }
-
-    .menu-button.open span { opacity: 0; }
-    .menu-button.open::before { transform: translateY(6px) rotate(45deg); }
-    .menu-button.open::after { transform: translateY(-6px) rotate(-45deg); }
-
-    .mobile-menu {
-      position: fixed;
-      inset: 0;
-      z-index: 1400;
-      padding: 120px var(--pad) 50px;
-      display: grid;
-      align-content: center;
-      gap: 22px;
-      color: var(--paper);
-      background: var(--green);
-      transform: translateY(-105%);
-      transition: transform .65s var(--ease);
-    }
-
-    .mobile-menu.open { transform: translateY(0); }
-    .mobile-menu a {
-      font-size: clamp(42px, 12vw, 92px);
-      font-weight: 950;
-      line-height: .9;
-      letter-spacing: -.06em;
-      text-transform: uppercase;
-    }
 
     .section-inner {
       width: min(1440px, calc(100% - (var(--pad) * 2)));
@@ -2311,9 +1747,18 @@
     }
 
     @media (max-width: 1060px) {
-      .site-header { grid-template-columns: 1fr auto; }
-      .nav-links, .nav-cta { display: none; }
-      .menu-button { display: block; }
+      .site-header { padding-inline: 14px; }
+      .nav-links {
+        gap: 14px;
+        font-size: 10px;
+        letter-spacing: .05em;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      .nav-links::-webkit-scrollbar { display: none; }
+      .nav-links a { padding: 6px 0; white-space: nowrap; }
+      .nav-cta { min-height: 36px; padding: 0 14px; font-size: 10px; }
       .hero-grid { grid-template-columns: 1fr; text-align: center; }
       .hero-copy.right { text-align: center; }
       .hero-copy.right .hero-sub, .hero-sub { margin-inline: auto; }
@@ -2331,10 +1776,23 @@
       .impact-main, .impact-side { min-height: 430px; }
     }
 
+    @media (max-width: 400px) {
+      .site-header { padding-inline: 9px; }
+      .brand-mark { width: 24px; height: 24px; }
+      .nav-links { gap: 9px; font-size: 8.5px; }
+      .nav-cta { min-height: 29px; padding: 0 10px; font-size: 8.5px; }
+    }
+
     @media (max-width: 720px) {
       :root { --pad: 18px; }
-      .site-header { top: 10px; left: 10px; right: 10px; min-height: 60px; padding-inline: 14px; border-radius: 18px; }
-      .brand-mark { width: 31px; height: 31px; }
+      .site-header { top: 10px; left: 10px; right: 10px; min-height: 54px; padding-inline: 11px; border-radius: 18px; }
+      .brand span:not(.brand-mark) { display: none; }
+      .nav-full { display: none; }
+      .nav-short { display: inline; }
+      .nav-links { gap: 12px; font-size: 9.5px; letter-spacing: .04em; }
+      .nav-links a { padding: 5px 0; }
+      .nav-cta { min-height: 32px; padding: 0 13px; font-size: 9.5px; letter-spacing: .03em; }
+      .brand-mark { width: 26px; height: 26px; }
       .hero { min-height: auto; padding-top: 110px; }
       .hero h1 { font-size: clamp(60px, 19vw, 96px); }
       .hero-halo { width: 92vw; }
@@ -2360,16 +1818,8 @@
       .patient-suggestions, .medicine-suggestions { right: 0; }
       .footer-inner { grid-template-columns: 1fr; }
       .footer-small { text-align: left; }
-      .login-screen { grid-template-columns: 1fr; overflow-y: auto; }
-      .login-visual { min-height: 46vh; padding: 28px 22px; }
-      .login-copy h1 { font-size: clamp(52px, 18vw, 90px); }
-      .login-security-note { display: none; }
-      .login-panel { padding: 34px 22px 48px; }
-      .account-copy, .account-chevron { display: none; }
-      .account-button { padding: 4px; }
       .selected-interaction-grid { grid-template-columns: 1fr; }
       .interaction-info-card.full { grid-column: auto; }
-      .cursor-dot, .cursor-ring { display: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -2594,85 +2044,343 @@
       .selected-interaction.empty { min-height: 230px; }
     }
 
+    /* ================= LOGIN OVERLAY ================= */
+
+    body.login-open { overflow: hidden; }
+
+    .login-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 5000;
+      overflow-y: auto;
+      background: var(--paper);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .4s var(--ease), visibility .4s ease;
+    }
+
+    .login-overlay.open { opacity: 1; visibility: visible; }
+
+    .auth {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(400px, .8fr);
+      min-height: 100dvh;
+    }
+
+    .auth-panel {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: clamp(30px, 4vw, 60px) 22px;
+      background: var(--paper);
+    }
+
+    .back-home {
+      position: absolute;
+      top: clamp(18px, 3vw, 30px);
+      left: clamp(18px, 3vw, 30px);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      transition: color .25s ease;
+    }
+
+    .back-home:hover { color: var(--green); }
+
+    /* ---------- brand ---------- */
+
+    .lg-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 30px;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -.03em;
+    }
+
+    .lg-brand-mark {
+      width: 40px;
+      height: 40px;
+      position: relative;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .lg-brand-mark::before,
+    .lg-brand-mark::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      background: var(--paper);
+      border-radius: 999px;
+      transform: translate(-50%, -50%);
+    }
+
+    .lg-brand-mark::before { width: 19px; height: 5px; }
+    .lg-brand-mark::after { width: 5px; height: 19px; }
+
+    /* ---------- card ---------- */
+
+    .auth-card {
+      width: min(100%, 520px);
+      text-align: center;
+    }
+
+    .auth-lead {
+      margin: 0 0 26px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    /* role blocks */
+
+    .role-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .role-block {
+      width: 108px;
+      padding: 20px 10px 16px;
+      color: inherit;
+      text-align: center;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform .25s var(--ease), border-color .25s ease, background .25s ease;
+    }
+
+    .role-block:hover {
+      transform: translateY(-3px);
+      border-color: var(--green);
+      background: var(--paper);
+    }
+
+    .role-block svg {
+      display: block;
+      margin: 0 auto 13px;
+      width: 30px;
+      height: 30px;
+      color: rgba(17, 18, 15, 0.5);
+      transition: color .25s ease;
+    }
+
+    .role-block:hover svg { color: var(--green); }
+
+    .role-block strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -.01em;
+    }
+
+    /* ---------- form step ---------- */
+
+    .lg-step { display: none; }
+    .lg-step.active { display: block; animation: rise .4s var(--ease) both; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .form-wrap { width: min(100%, 340px); margin: 0 auto; text-align: left; }
+
+    .form-head { margin-bottom: 24px; text-align: center; }
+
+    .form-head svg {
+      display: block;
+      margin: 0 auto 12px;
+      width: 30px;
+      height: 30px;
+      color: rgba(17, 18, 15, 0.5);
+    }
+
+    .form-head h2 {
+      margin: 0 0 4px;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+    }
+
+    .form-head p { margin: 0; color: var(--muted); font-size: 13px; }
+
+    .auth-form { display: grid; gap: 15px; }
+
+    .field { display: grid; gap: 7px; }
+
+    .field label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 13px 15px;
+      color: var(--ink);
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font-size: 14px;
+      transition: border-color .25s ease, box-shadow .25s ease;
+    }
+
+    .field input:focus {
+      outline: none;
+      border-color: var(--green);
+      box-shadow: 0 0 0 4px rgba(21,63,50,.12);
+    }
+
+    .submit {
+      margin-top: 5px;
+      padding: 14px 20px;
+      color: var(--paper);
+      background: var(--green);
+      border: 0;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .25s ease, background .25s ease;
+    }
+
+    .submit:hover { transform: translateY(-2px); background: #0d3025; }
+
+    .auth-error {
+      min-height: 16px;
+      margin: 0;
+      color: #a32b1f;
+      font-size: 12px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .back-role {
+      display: block;
+      margin: 18px auto 0;
+      padding: 0;
+      color: var(--muted);
+      background: none;
+      border: 0;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .back-role:hover { color: var(--green); text-decoration: underline; }
+
+    .password-wrap { position: relative; }
+
+    .password-wrap input { padding-right: 46px; }
+
+    .toggle-password {
+      position: absolute;
+      top: 50%;
+      right: 8px;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      background: none;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      transform: translateY(-50%);
+      transition: color .2s ease, background .2s ease;
+    }
+
+    .toggle-password:hover { color: var(--green); background: var(--paper); }
+    .toggle-password svg { width: 18px; height: 18px; }
+
+    /* ---------- right: flat green ---------- */
+
+    .auth-visual {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: clamp(34px, 4vw, 70px);
+      text-align: center;
+      color: var(--paper);
+      background: var(--green);
+    }
+
+    .visual-mark {
+      width: 78px;
+      height: 78px;
+      margin: 0 auto 28px;
+      position: relative;
+      border-radius: 50%;
+      background: var(--lime);
+    }
+
+    .visual-mark::before,
+    .visual-mark::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      background: var(--green);
+      border-radius: 999px;
+      transform: translate(-50%, -50%);
+    }
+
+    .visual-mark::before { width: 38px; height: 9px; }
+    .visual-mark::after { width: 9px; height: 38px; }
+
+    .auth-visual h1 {
+      margin: 0 auto;
+      max-width: 12ch;
+      font-size: clamp(32px, 3.2vw, 42px);
+      font-weight: 800;
+      line-height: 1.14;
+      letter-spacing: -.03em;
+    }
+
+    .auth-visual p {
+      margin: 22px auto 0;
+      max-width: 30ch;
+      color: rgba(243,240,232,.74);
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 940px) {
+      .auth { grid-template-columns: 1fr; }
+      .auth-visual { order: -1; min-height: 38vh; padding: 52px 24px 46px; }
+      .visual-mark { width: 58px; height: 58px; margin-bottom: 20px; }
+      .visual-mark::before { width: 28px; height: 7px; }
+      .visual-mark::after { width: 7px; height: 28px; }
+      .auth-panel { padding: 42px 22px 52px; }
+      .lg-brand { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .role-grid { gap: 10px; }
+      .role-block { width: calc(50% - 5px); padding: 18px 10px 15px; }
+      .auth-lead { font-size: 15px; }
+    }
+  
   </style>
 </head>
-<body class="auth-locked">
-  <div class="cursor-dot" aria-hidden="true"></div>
-  <div class="cursor-ring" aria-hidden="true"></div>
+<body>
   <div class="page-progress" aria-hidden="true"><span></span></div>
 
 
-  <section class="login-screen" id="loginScreen" aria-label="PharmaCare+ secure demo sign in">
-    <div class="login-visual">
-      <div class="login-brand">
-        <span class="brand-mark" aria-hidden="true"></span>
-        <span>PharmaCare+</span>
-      </div>
-
-      <div class="login-copy">
-        <div class="eyebrow">Hospital pharmacy decision support</div>
-        <h1><span>Review.</span><span class="outline">Verify.</span><span>Protect.</span></h1>
-        <p id="loginFacilityCopy">Secure academic prototype access for two Gauteng academic-hospital pharmacy teams.</p>
-      </div>
-
-      <div class="login-security-note">
-        <span>✦</span>
-        <span>This demonstration uses fictional staff, patient and registration information. It is not connected to hospital or South African Pharmacy Council systems.</span>
-      </div>
-    </div>
-
-    <div class="login-panel">
-      <div class="login-card">
-        <div class="login-card-kicker">Authorised personnel</div>
-        <h2>Pharmacist sign in.</h2>
-        <p>Use the demonstration credentials below to enter the hospital pharmacist workspace.</p>
-
-        <form class="login-form" id="loginForm" novalidate>
-          <div class="login-field">
-            <label for="staffId">Staff ID</label>
-            <input id="staffId" name="staffId" type="text" value="DGMH-PH-014" autocomplete="username" aria-describedby="loginError" />
-          </div>
-          <div class="login-field">
-            <label for="staffPassword">Password</label>
-            <input id="staffPassword" name="staffPassword" type="password" value="CareSafe2026!" autocomplete="current-password" aria-describedby="loginError" />
-          </div>
-          <button class="login-submit" type="submit">Enter pharmacist workspace →</button>
-          <p class="login-error" id="loginError" role="alert"></p>
-        </form>
-
-        <div class="demo-access">
-          <div class="demo-access-top">
-            <strong>Demonstration access</strong>
-            <span>Two fictional profiles</span>
-          </div>
-          <div class="demo-profile-block">
-            <strong>Dr George Mukhari Academic Hospital</strong>
-            <div class="credential-row"><span>Staff ID</span><code>DGMH-PH-014</code></div>
-            <div class="credential-row"><span>Password</span><code>CareSafe2026!</code></div>
-          </div>
-          <div class="demo-profile-block">
-            <strong>Steve Biko Academic Hospital</strong>
-            <div class="credential-row"><span>Staff ID</span><code>SBAH-PH-022</code></div>
-            <div class="credential-row"><span>Password</span><code>VerifyDose2026!</code></div>
-          </div>
-          <small>Both profiles, staff numbers and SAPC-style registration values are fictional and deliberately marked as DEMO.</small>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <aside class="welcome-toast" id="welcomeToast" aria-live="polite">
-    <span class="welcome-toast-icon">✓</span>
-    <div>
-      <small>Access granted · Fictional demo profile</small>
-      <strong id="welcomeUserName">Pharmacist access granted</strong>
-      <p id="welcomeUserMeta">Academic hospital pharmacy · Fictional demo profile</p>
-    </div>
-    <button id="closeWelcomeToast" type="button" aria-label="Close welcome message">×</button>
-  </aside>
-
   <header class="site-header" id="siteHeader">
-    <a class="brand magnetic" href="#home" aria-label="PharmaCare+ home">
+    <a class="brand" href="#home" aria-label="PharmaCare+ home">
       <span class="brand-mark" aria-hidden="true"></span>
       <span>PharmaCare+</span>
     </a>
@@ -2680,45 +2388,14 @@
     <nav class="nav-links" aria-label="Primary navigation">
       <a href="#home">Home</a>
       <a href="#mission">Mission</a>
-      <a href="#checker">Patient check</a>
-      <a href="#process">How it works</a>
+      <a href="#checker"><span class="nav-full">Patient check</span><span class="nav-short">Check</span></a>
+      <a href="#process"><span class="nav-full">How it works</span><span class="nav-short">Process</span></a>
       <a href="#impact">Impact</a>
     </nav>
 
-    <div class="pharmacist-account" id="pharmacistAccount">
-      <button class="account-button" id="accountButton" type="button" aria-expanded="false" aria-controls="accountMenu">
-        <span class="account-avatar" id="accountAvatar">RN</span>
-        <span class="account-copy"><strong id="accountName">Refilwe Ndlovu</strong><span>Hospital pharmacist</span></span>
-        <span class="account-chevron">⌄</span>
-      </button>
-      <div class="account-menu" id="accountMenu">
-        <div class="account-profile-head">
-          <span class="account-avatar" id="accountMenuAvatar">RN</span>
-          <div><strong id="accountMenuName">Refilwe Ndlovu</strong><span>Pharmacist · Academic demo</span></div>
-        </div>
-        <div class="account-detail-list">
-          <div class="account-detail-row"><span>Facility</span><strong id="accountFacility">Dr George Mukhari Academic Hospital</strong></div>
-          <div class="account-detail-row"><span>Regulatory body</span><strong>South African Pharmacy Council</strong></div>
-          <div class="account-detail-row"><span>Demo registration</span><strong id="accountRegistration">SAPC-DEMO-DGMH-014</strong></div>
-          <div class="account-detail-row"><span>Staff ID</span><strong id="accountStaffId">DGMH-PH-014</strong></div>
-        </div>
-        <div class="account-demo-note" id="accountDemoNote">Fictional academic profile. The displayed DEMO registration is intentionally invalid and must never be presented as a real registration number.</div>
-        <button class="signout-button" id="signOutButton" type="button">Sign out</button>
-      </div>
-    </div>
+    <a class="nav-cta" href="#login">Log in</a>
 
-    <button class="menu-button" id="menuButton" type="button" aria-label="Open menu" aria-expanded="false">
-      <span></span>
-    </button>
   </header>
-
-  <nav class="mobile-menu" id="mobileMenu" aria-label="Mobile navigation">
-    <a href="#home">Home</a>
-    <a href="#mission">Mission</a>
-    <a href="#checker">Patient check</a>
-    <a href="#process">Process</a>
-    <a href="#impact">Impact</a>
-  </nav>
 
   <main>
     <section class="hero" id="home">
@@ -2731,8 +2408,8 @@
           </h1>
           <p class="hero-sub">A hospital-pharmacy decision-support prototype that combines patient context with multi-medicine interaction screening before medication is dispensed.</p>
           <div class="hero-actions">
-            <a class="button primary magnetic" href="#checker">Open patient check <span>↘</span></a>
-            <a class="button magnetic" href="#mission">Discover the mission</a>
+            <a class="button primary" href="#checker">Open patient check <span>↘</span></a>
+            <a class="button" href="#mission">Discover the mission</a>
           </div>
         </div>
 
@@ -3041,11 +2718,72 @@
     </div>
   </footer>
 
+  <section class="login-overlay" id="loginOverlay" aria-hidden="true">
+  <div class="auth">
+
+    <!-- ========== LEFT: sign in ========== -->
+    <div class="auth-panel">
+      <button class="back-home" type="button" id="closeLogin">← Back to site</button>
+
+      <div class="lg-brand">
+        <span class="lg-brand-mark" aria-hidden="true"></span>
+        <span>PharmaCare+</span>
+      </div>
+
+      <div class="auth-card">
+
+    <!-- STEP 1 — role blocks -->
+    <div class="lg-step active" id="stepRole">
+      <p class="auth-lead">Please select your role to continue</p>
+      <div class="role-grid" id="roleGrid"></div>
+    </div>
+
+    <!-- STEP 2 — credentials -->
+    <div class="lg-step" id="stepLogin">
+      <div class="form-wrap">
+        <div class="form-head">
+          <span id="formIcon"></span>
+          <h2 id="formTitle">Sign in</h2>
+          <p id="formCopy">Enter your credentials to continue</p>
+        </div>
+
+        <form class="auth-form" id="authForm" novalidate>
+          <div class="field">
+            <label for="userId" id="idLabel">Staff ID</label>
+            <input id="userId" name="userId" type="text" autocomplete="username" />
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <div class="password-wrap">
+              <input id="password" name="password" type="password" placeholder="Password" autocomplete="current-password" />
+              <button class="toggle-password" type="button" id="togglePassword" aria-label="Show password" aria-pressed="false"></button>
+            </div>
+          </div>
+          <button class="submit" type="submit">Sign in</button>
+          <p class="auth-error" id="authError" role="alert"></p>
+        </form>
+
+        <button class="back-role" type="button" id="backRole">← Choose a different role</button>
+      </div>
+    </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========== RIGHT: brand ========== -->
+    <div class="auth-visual">
+      <div class="visual-mark" aria-hidden="true"></div>
+      <h1>PharmaCare+</h1>
+      <p>Screen every prescription for harmful drug interactions before it reaches a patient.</p>
+    </div>
+
+  </div>
+  </section>
+
   <script>
     const body = document.body;
     const header = document.getElementById('siteHeader');
-    const menuButton = document.getElementById('menuButton');
-    const mobileMenu = document.getElementById('mobileMenu');
     const progressBar = document.querySelector('.page-progress span');
     const navLinks = [...document.querySelectorAll('.nav-links a')];
     const sections = [...document.querySelectorAll('main section[id]')];
@@ -3085,105 +2823,15 @@
 
     let activeUser = DEMO_USERS[0];
 
-    const loginScreen = document.getElementById('loginScreen');
-    const loginForm = document.getElementById('loginForm');
-    const staffIdInput = document.getElementById('staffId');
-    const staffPasswordInput = document.getElementById('staffPassword');
-    const loginError = document.getElementById('loginError');
-    const accountButton = document.getElementById('accountButton');
-    const accountMenu = document.getElementById('accountMenu');
-    const signOutButton = document.getElementById('signOutButton');
-    const welcomeToast = document.getElementById('welcomeToast');
-    const closeWelcomeToast = document.getElementById('closeWelcomeToast');
-    let welcomeTimer;
-
-    function applyUserProfile(user) {
-      document.getElementById('welcomeUserName').textContent = `${user.name} · ${user.role}`;
-      document.getElementById('welcomeUserMeta').textContent = `${user.facility} · Demo registration: ${user.demoRegistration}`;
-      document.getElementById('accountAvatar').textContent = user.initials;
-      document.getElementById('accountMenuAvatar').textContent = user.initials;
-      document.getElementById('accountName').textContent = user.name;
-      document.getElementById('accountMenuName').textContent = user.name;
-      document.getElementById('accountFacility').textContent = user.facility;
-      document.getElementById('accountRegistration').textContent = user.demoRegistration;
-      document.getElementById('accountStaffId').textContent = user.staffId;
-      document.getElementById('accountDemoNote').textContent = `Fictional academic profile. ${user.demoRegistration} is intentionally invalid and must never be presented as a real professional registration number.`;
+    function applyFacilityLabels(user) {
       document.getElementById('heroFacilityLabel').textContent = `${user.facility} · Pharmacy prototype`;
       document.getElementById('currentFacilityName').textContent = user.facility;
       document.getElementById('patientFacility').textContent = user.facility;
       document.getElementById('prototypeFacilityNote').textContent = `Academic demonstration for ${user.facility} only.`;
       document.getElementById('footerFacilityNote').textContent = `Safety in every dose. Final-year academic prototype presented as a ${user.facility} pharmacy workflow.`;
-      document.getElementById('loginFacilityCopy').textContent = `Secure academic prototype access for ${user.facility}.`;
     }
 
-    function showWelcomeToast() {
-      clearTimeout(welcomeTimer);
-      welcomeToast.classList.add('show');
-      welcomeTimer = window.setTimeout(() => welcomeToast.classList.remove('show'), 6500);
-    }
-
-    function unlockWorkspace() {
-      body.classList.remove('auth-locked');
-      loginScreen.classList.add('is-hidden');
-      loginScreen.setAttribute('aria-hidden', 'true');
-      setTimeout(() => loginScreen.style.display = 'none', 680);
-      updatePage();
-      window.setTimeout(showWelcomeToast, 720);
-    }
-
-    function lockWorkspace() {
-      sessionStorage.removeItem('pharmacare-demo-auth');
-      sessionStorage.removeItem('pharmacare-demo-user');
-      window.location.reload();
-    }
-
-    loginForm.addEventListener('submit', event => {
-      event.preventDefault();
-      const staffId = staffIdInput.value.trim();
-      const password = staffPasswordInput.value;
-      const matchedUser = DEMO_USERS.find(user => user.staffId === staffId && user.password === password);
-
-      if (matchedUser) {
-        activeUser = matchedUser;
-        applyUserProfile(activeUser);
-        loginError.textContent = '';
-        sessionStorage.setItem('pharmacare-demo-auth', 'true');
-        sessionStorage.setItem('pharmacare-demo-user', activeUser.staffId);
-        unlockWorkspace();
-        return;
-      }
-
-      loginError.textContent = 'The staff ID or password is incorrect. Use one of the two fictional demonstration profiles shown below.';
-      staffPasswordInput.focus();
-      staffPasswordInput.select();
-    });
-
-    accountButton.addEventListener('click', event => {
-      event.stopPropagation();
-      const isOpen = accountMenu.classList.toggle('open');
-      accountButton.setAttribute('aria-expanded', String(isOpen));
-    });
-
-    signOutButton.addEventListener('click', lockWorkspace);
-    closeWelcomeToast.addEventListener('click', () => welcomeToast.classList.remove('show'));
-
-    document.addEventListener('click', event => {
-      if (!event.target.closest('#pharmacistAccount')) {
-        accountMenu.classList.remove('open');
-        accountButton.setAttribute('aria-expanded', 'false');
-      }
-    });
-
-    const savedUserId = sessionStorage.getItem('pharmacare-demo-user');
-    const savedUser = DEMO_USERS.find(user => user.staffId === savedUserId);
-    if (sessionStorage.getItem('pharmacare-demo-auth') === 'true' && savedUser) {
-      activeUser = savedUser;
-      applyUserProfile(activeUser);
-      unlockWorkspace();
-    } else {
-      applyUserProfile(activeUser);
-      window.setTimeout(() => staffIdInput.focus(), 100);
-    }
+    applyFacilityLabels(activeUser);
 
     let lastScroll = window.scrollY;
     let ticking = false;
@@ -3199,7 +2847,7 @@
       progressBar.style.transform = `scaleX(${progress})`;
 
       header.classList.toggle('scrolled', y > 40);
-      if (y > lastScroll && y > 220 && !mobileMenu.classList.contains('open')) {
+      if (y > lastScroll && y > 220) {
         header.classList.add('hidden');
       } else {
         header.classList.remove('hidden');
@@ -3241,23 +2889,6 @@
     window.addEventListener('resize', updatePage);
     updatePage();
 
-    menuButton.addEventListener('click', () => {
-      const isOpen = mobileMenu.classList.toggle('open');
-      menuButton.classList.toggle('open', isOpen);
-      menuButton.setAttribute('aria-expanded', String(isOpen));
-      body.classList.toggle('menu-open', isOpen);
-      header.classList.remove('hidden');
-    });
-
-    mobileMenu.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        mobileMenu.classList.remove('open');
-        menuButton.classList.remove('open');
-        menuButton.setAttribute('aria-expanded', 'false');
-        body.classList.remove('menu-open');
-      });
-    });
-
     document.querySelectorAll('a[href^="#"]').forEach(link => {
       link.addEventListener('click', event => {
         const target = document.querySelector(link.getAttribute('href'));
@@ -3279,18 +2910,7 @@
     document.querySelectorAll('[data-reveal]').forEach(element => revealObserver.observe(element));
 
     if (window.matchMedia('(pointer:fine)').matches && !reduceMotion) {
-      const dot = document.querySelector('.cursor-dot');
-      const ring = document.querySelector('.cursor-ring');
-      let mouseX = 0;
-      let mouseY = 0;
-      let ringX = 0;
-      let ringY = 0;
-
       window.addEventListener('mousemove', event => {
-        mouseX = event.clientX;
-        mouseY = event.clientY;
-        dot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
-
         const rect = productStage.getBoundingClientRect();
         if (event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom && window.scrollY < window.innerHeight) {
           const localX = (event.clientX - rect.left) / rect.width - .5;
@@ -3300,30 +2920,6 @@
         }
       });
 
-      function animateCursor() {
-        ringX += (mouseX - ringX) * .14;
-        ringY += (mouseY - ringY) * .14;
-        ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0)`;
-        requestAnimationFrame(animateCursor);
-      }
-      animateCursor();
-
-      document.querySelectorAll('a, button, select, input').forEach(element => {
-        element.addEventListener('mouseenter', () => ring.classList.add('active'));
-        element.addEventListener('mouseleave', () => ring.classList.remove('active'));
-      });
-
-      document.querySelectorAll('.magnetic').forEach(element => {
-        element.addEventListener('mousemove', event => {
-          const rect = element.getBoundingClientRect();
-          const x = event.clientX - rect.left - rect.width / 2;
-          const y = event.clientY - rect.top - rect.height / 2;
-          element.style.transform = `translate(${x * .12}px, ${y * .12}px)`;
-        });
-        element.addEventListener('mouseleave', () => {
-          element.style.transform = '';
-        });
-      });
     }
 
     const medicineDirectory = [
@@ -4291,6 +3887,215 @@
     renderMedicationList();
     resetAnalysis('Load an anonymous patient file and add at least two generic or brand/trade medicine names to begin.');
 
+    /* ================= LOGIN OVERLAY ================= */
+
+    const ICONS = {
+
+      admin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2 19 6v5.4c0 4.2-2.8 7.4-7 8.9-4.2-1.5-7-4.7-7-8.9V6l7-2.8Z"/><path d="M9.6 12.1l1.7 1.7 3.3-3.4"/></svg>',
+
+      doctor: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.2" r="3.6"/><path d="M5.4 19.6a6.6 6.6 0 0 1 13.2 0"/></svg>',
+
+      pharmacy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="7.4" width="17.2" height="12.4" rx="2.6"/><path d="M9 7.4V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1.4"/><path d="M12 11.4v4.6M9.7 13.7h4.6"/></svg>',
+
+      research: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.8" cy="10.8" r="6.2"/><path d="M15.4 15.4 20 20"/></svg>'
+
+    };
+
+    // The key is exactly what the server calls the role.
+    const ROLES = [
+      {
+        key: 'admin',
+        name: 'Admin',
+        icon: ICONS.admin,
+        idLabel: 'Admin ID',
+        copy: 'Manage patient files, uploads and system records'
+      },
+      {
+        key: 'doctor',
+        name: 'Doctor',
+        icon: ICONS.doctor,
+        idLabel: 'Staff ID',
+        copy: 'Write and screen patient prescriptions'
+      },
+      {
+        key: 'pharmacist',
+        name: 'Pharmacy',
+        icon: ICONS.pharmacy,
+        idLabel: 'Pharmacist ID',
+        copy: 'Verify and dispense incoming prescriptions'
+      },
+      {
+        key: 'researcher',
+        name: 'Research',
+        icon: ICONS.research,
+        idLabel: 'Researcher ID',
+        copy: 'Review and validate unknown drug pairs'
+      }
+    ];
+
+    const roleGrid = document.getElementById('roleGrid');
+    const stepRole = document.getElementById('stepRole');
+    const stepLogin = document.getElementById('stepLogin');
+    const authForm = document.getElementById('authForm');
+    const authError = document.getElementById('authError');
+    const userIdInput = document.getElementById('userId');
+    const passwordInput = document.getElementById('password');
+
+    let activeRole = null;
+
+    roleGrid.innerHTML = ROLES.map(role => `
+      <button class="role-block" type="button" data-role="${role.key}">
+        ${role.icon}
+        <strong>${role.name}</strong>
+      </button>
+    `).join('');
+
+    function showStep(step) {
+      stepRole.classList.toggle('active', step === 'role');
+      stepLogin.classList.toggle('active', step === 'login');
+    }
+
+    function selectRole(key) {
+      activeRole = ROLES.find(role => role.key === key);
+      if (!activeRole) return;
+
+      document.getElementById('formIcon').innerHTML = activeRole.icon;
+      document.getElementById('formTitle').textContent = `${activeRole.name} sign in`;
+      document.getElementById('formCopy').textContent = activeRole.copy;
+      document.getElementById('idLabel').textContent = activeRole.idLabel;
+      userIdInput.placeholder = activeRole.idLabel;
+
+      authError.textContent = '';
+      userIdInput.value = '';
+      passwordInput.value = '';
+      passwordInput.type = 'password';
+      togglePassword.innerHTML = EYE_OPEN;
+      togglePassword.setAttribute('aria-label', 'Show password');
+      togglePassword.setAttribute('aria-pressed', 'false');
+
+      showStep('login');
+      window.setTimeout(() => userIdInput.focus(), 120);
+    }
+
+    roleGrid.addEventListener('click', event => {
+      const block = event.target.closest('.role-block');
+      if (block) selectRole(block.dataset.role);
+    });
+
+    const EYE_OPEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+    const EYE_CLOSED = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 6.2A9.9 9.9 0 0 1 12 6c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.4 4.2M6.6 6.7A17.4 17.4 0 0 0 2 13s3.6 7 10 7a9.7 9.7 0 0 0 4.2-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+
+    const togglePassword = document.getElementById('togglePassword');
+    togglePassword.innerHTML = EYE_OPEN;
+
+    togglePassword.addEventListener('click', () => {
+      const showing = passwordInput.type === 'text';
+      passwordInput.type = showing ? 'password' : 'text';
+      togglePassword.innerHTML = showing ? EYE_OPEN : EYE_CLOSED;
+      togglePassword.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+      togglePassword.setAttribute('aria-pressed', String(!showing));
+      passwordInput.focus();
+    });
+
+    document.getElementById('backRole').addEventListener('click', () => {
+      activeRole = null;
+      authError.textContent = '';
+      showStep('role');
+    });
+
+    function getCookie(name) {
+      const match = document.cookie.match(new RegExp('(^|; )' + name + '=([^;]*)'));
+      return match ? decodeURIComponent(match[2]) : null;
+    }
+
+    async function ensureCsrf() {
+      if (!getCookie('csrftoken')) {
+        await fetch('/api/auth/csrf/', { credentials: 'same-origin' });
+      }
+      return getCookie('csrftoken');
+    }
+
+    const submitButton = authForm.querySelector('.submit');
+
+    authForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      if (!activeRole) return;
+
+      const userId = userIdInput.value.trim();
+      const password = passwordInput.value;
+      authError.textContent = '';
+
+      if (!userId || !password) {
+        authError.textContent = 'Enter your ID and password.';
+        return;
+      }
+
+      submitButton.disabled = true;
+      const buttonLabel = submitButton.textContent;
+      submitButton.textContent = 'Signing in\u2026';
+
+      try {
+        const token = await ensureCsrf();
+
+        // The server checks the password and the role. Everything here is
+        // only about what the person sees while it does.
+        const response = await fetch('/api/auth/login/', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': token || '' },
+          body: JSON.stringify({ user_id: userId, password, expected_role: activeRole.key })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (response.ok) {
+          window.location.href = data.redirect || '/';
+          return;
+        }
+
+        authError.textContent = data.detail || 'Those details did not work. Check the ID and try again.';
+        passwordInput.value = '';
+        passwordInput.focus();
+      } catch (error) {
+        authError.textContent = 'Cannot reach the server. Check that it is running and try again.';
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = buttonLabel;
+      }
+    });
+
+    const loginOverlay = document.getElementById('loginOverlay');
+    const loginTrigger = document.querySelector('.nav-cta');
+
+    function openLogin() {
+      loginOverlay.classList.add('open');
+      loginOverlay.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('login-open');
+      showStep('role');
+      activeRole = null;
+    }
+
+    function closeLogin() {
+      loginOverlay.classList.remove('open');
+      loginOverlay.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('login-open');
+      if (window.location.hash === '#login') {
+        history.replaceState(null, '', window.location.pathname);
+      }
+    }
+
+    loginTrigger.addEventListener('click', event => {
+      event.preventDefault();
+      openLogin();
+    });
+
+    document.getElementById('closeLogin').addEventListener('click', closeLogin);
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && loginOverlay.classList.contains('open')) closeLogin();
+    });
+
+    if (window.location.hash === '#login') openLogin();
   </script>
 </body>
 </html>
