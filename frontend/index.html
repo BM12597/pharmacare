@@ -2373,6 +2373,32 @@
       .auth-lead { font-size: 15px; }
     }
   
+    /* Simplified public landing page */
+    .checker { display: none; }
+    .patient-panel { display: none; }
+    .clinical-shell { grid-template-columns: minmax(0, 1fr); }
+
+    /* Keep the right hero statement as large as the left statement. */
+    @media (min-width: 1061px) {
+      .hero-copy.right { width: auto; justify-self: stretch; }
+      .hero-copy.right h1 {
+        font-size: clamp(70px, 7.2vw, 138px);
+        line-height: .8;
+        letter-spacing: -.085em;
+      }
+    }
+
+    /* Login visual language */
+    .login-overlay { background: radial-gradient(circle at 12% 12%, rgba(215,229,143,.22), transparent 27%), var(--paper); }
+    .auth-panel { overflow: hidden; background: transparent; }
+    .auth-panel::before { content: ""; position: absolute; width: 430px; aspect-ratio: 1; right: -240px; bottom: -250px; border: 1px solid rgba(21,63,50,.12); border-radius: 50%; box-shadow: 0 0 0 68px rgba(21,63,50,.035), 0 0 0 136px rgba(21,63,50,.02); pointer-events: none; }
+    .auth-card { position: relative; z-index: 1; padding: clamp(28px, 4vw, 48px); background: rgba(255,255,255,.76); border: 1px solid rgba(17,18,15,.1); border-radius: 30px; box-shadow: 0 28px 70px rgba(15,32,26,.10); backdrop-filter: blur(14px); }
+    .back-home { min-height: 42px; padding: 0 17px; display: inline-flex; align-items: center; justify-content: center; color: var(--paper); background: var(--green); border: 1px solid rgba(21,63,50,.18); border-radius: 999px; box-shadow: 0 10px 24px rgba(15,32,26,.12); font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; transition: transform .25s var(--ease), background .25s ease, box-shadow .25s ease; }
+    .back-home:hover { color: var(--green); background: var(--lime); box-shadow: 0 14px 28px rgba(15,32,26,.16); transform: translateY(-2px); }
+    .role-block { width: 118px; padding: 23px 10px 19px; border-radius: 18px; }
+    .role-block:hover { color: var(--green); border-color: rgba(21,63,50,.5); background: var(--lime); box-shadow: 0 12px 24px rgba(21,63,50,.12); }
+    .auth-visual { position: relative; overflow: hidden; }
+    .auth-visual::before { content: ""; position: absolute; width: 570px; height: 570px; top: -290px; right: -180px; border: 1px solid rgba(243,240,232,.15); border-radius: 50%; box-shadow: 0 0 0 86px rgba(255,255,255,.035), 0 0 0 172px rgba(255,255,255,.018); }
   </style>
 </head>
 <body>
@@ -2388,7 +2414,7 @@
     <nav class="nav-links" aria-label="Primary navigation">
       <a href="#home">Home</a>
       <a href="#mission">Mission</a>
-      <a href="#checker"><span class="nav-full">Patient check</span><span class="nav-short">Check</span></a>
+      
       <a href="#process"><span class="nav-full">How it works</span><span class="nav-short">Process</span></a>
       <a href="#impact">Impact</a>
     </nav>
@@ -2401,16 +2427,13 @@
     <section class="hero" id="home">
       <div class="hero-grid">
         <div class="hero-copy" data-reveal>
-          <div class="eyebrow" id="heroFacilityLabel">Dr George Mukhari Academic Hospital · Pharmacy prototype</div>
+          <div class="eyebrow" id="heroFacilityLabel">.</div>
           <h1>
             <span>A safer</span>
             <span class="outline">way to</span>
           </h1>
-          <p class="hero-sub">A hospital-pharmacy decision-support prototype that combines patient context with multi-medicine interaction screening before medication is dispensed.</p>
-          <div class="hero-actions">
-            <a class="button primary" href="#checker">Open patient check <span>↘</span></a>
-            <a class="button" href="#mission">Discover the mission</a>
-          </div>
+          <p class="hero-sub"></p>
+          
         </div>
 
         <div class="product-stage" id="productStage" aria-label="Animated PharmaCare+ product visual">
@@ -2422,8 +2445,8 @@
           <div class="product-box" id="productBox">
             <div class="box-face">
               <div class="box-topline">
-                <span>Clinical AI</span>
-                <span>Prototype / 01</span>
+                <span></span>
+                <span></span>
               </div>
               <div class="box-title">
                 Pharma<br />Care+
@@ -2445,13 +2468,13 @@
             <span>Prescribe</span>
             <span class="outline">with care</span>
           </h1>
-          <p class="hero-sub">Designed for hospital pharmacists who need one clear view of the patient file, full medicine list and interaction priority.</p>
+          <p class="hero-sub"></p>
         </div>
       </div>
 
       <div class="hero-note" aria-hidden="true">
         <span>Scroll to explore</span>
-        <span>Final-year computer science project</span>
+        <span></span>
       </div>
     </section>
 
@@ -2460,14 +2483,14 @@
         <div class="mission-words" aria-hidden="true">
           <span class="mission-line" id="missionLineOne">Our mission is</span>
           <span class="mission-line outline" id="missionLineTwo">safer medicine</span>
-          <span class="mission-line" id="missionLineThree">before every dose</span>
+          <span class="mission-line" id="missionLineThree"></span>
         </div>
 
         <div class="mission-object" id="missionObject">
           <div class="mission-card">
             <div class="mission-card-top">
               <span>PharmaCare+</span>
-              <span>Safety system</span>
+              
             </div>
             <div class="mission-pill-icon" aria-hidden="true"></div>
             <div class="mission-card-bottom">
@@ -2477,19 +2500,12 @@
           </div>
         </div>
 
-        <p class="mission-copy">The oversized words move behind the pharmaceutical visual as you scroll. This creates the layered product-storytelling effect while keeping the page focused and much shorter.</p>
+        <p class="mission-copy"></p>
       </div>
     </section>
 
     <section class="checker" id="checker">
-      <div class="section-inner">
-        <div class="section-head">
-          <div data-reveal>
-            <div class="eyebrow">Hospital pharmacist workspace</div>
-            <h2 class="section-title">Check the full profile.</h2>
-          </div>
-          <p class="section-description" data-reveal>Pull a demonstration patient file, review the recorded clinical factors, add any number of medicines by generic name, and run a pairwise interaction and patient-context check.</p>
-        </div>
+      
 
         <div class="clinical-shell" data-reveal>
           <aside class="patient-panel">
@@ -2501,8 +2517,8 @@
               <div class="hospital-banner" aria-label="Current hospital">
                 <div class="hospital-banner-mark" aria-hidden="true">+</div>
                 <span>Current facility</span>
-                <strong id="currentFacilityName">Dr George Mukhari Academic Hospital</strong>
-                <small>Hospital pharmacy · Academic prototype</small>
+                <strong id="currentFacilityName"></strong>
+                <small></small>
               </div>
 
               <div class="patient-search">
@@ -2701,10 +2717,7 @@
             <p>The platform turns interaction data into a clear, real-time warning that can help clinicians pause, review and choose a safer course of action.</p>
           </article>
 
-          <article class="impact-side" data-reveal>
-            <strong>3</strong>
-            <span>Simple risk tiers — Low, Moderate and High — designed for fast interpretation during clinical work.</span>
-          </article>
+          
         </div>
       </div>
     </section>
@@ -2714,7 +2727,7 @@
   <footer class="footer">
     <div class="footer-inner">
       <div class="footer-brand">PharmaCare+</div>
-      <p class="footer-small"><span id="footerFacilityNote">Safety in every dose. Final-year academic hospital-pharmacy prototype.</span></p>
+      <p class="footer-small"><span id="footerFacilityNote">Safety in every dose. .</span></p>
     </div>
   </footer>
 
@@ -2804,7 +2817,7 @@
         initials: 'RN',
         role: 'Pharmacist',
         facilityCode: 'DGMH',
-        facility: 'Dr George Mukhari Academic Hospital',
+        facility: '',
         regulatoryBody: 'South African Pharmacy Council',
         demoRegistration: 'SAPC-DEMO-DGMH-014'
       },
@@ -2824,7 +2837,7 @@
     let activeUser = DEMO_USERS[0];
 
     function applyFacilityLabels(user) {
-      document.getElementById('heroFacilityLabel').textContent = `${user.facility} · Pharmacy prototype`;
+      document.getElementById('heroFacilityLabel').textContent = `${user.facility} `;
       document.getElementById('currentFacilityName').textContent = user.facility;
       document.getElementById('patientFacility').textContent = user.facility;
       document.getElementById('prototypeFacilityNote').textContent = `Academic demonstration for ${user.facility} only.`;
@@ -3936,6 +3949,7 @@
     const roleGrid = document.getElementById('roleGrid');
     const stepRole = document.getElementById('stepRole');
     const stepLogin = document.getElementById('stepLogin');
+    const topBackButton = document.getElementById('closeLogin');
     const authForm = document.getElementById('authForm');
     const authError = document.getElementById('authError');
     const userIdInput = document.getElementById('userId');
@@ -3953,6 +3967,7 @@
     function showStep(step) {
       stepRole.classList.toggle('active', step === 'role');
       stepLogin.classList.toggle('active', step === 'login');
+      topBackButton.textContent = step === 'login' ? '← Back to login' : '← Back to site';
     }
 
     function selectRole(key) {
@@ -3997,11 +4012,13 @@
       passwordInput.focus();
     });
 
-    document.getElementById('backRole').addEventListener('click', () => {
+    function returnToRoleSelection() {
       activeRole = null;
       authError.textContent = '';
       showStep('role');
-    });
+    }
+
+    document.getElementById('backRole').addEventListener('click', returnToRoleSelection);
 
     function getCookie(name) {
       const match = document.cookie.match(new RegExp('(^|; )' + name + '=([^;]*)'));
@@ -4089,7 +4106,10 @@
       openLogin();
     });
 
-    document.getElementById('closeLogin').addEventListener('click', closeLogin);
+    topBackButton.addEventListener('click', () => {
+      if (stepLogin.classList.contains('active')) returnToRoleSelection();
+      else closeLogin();
+    });
 
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape' && loginOverlay.classList.contains('open')) closeLogin();
