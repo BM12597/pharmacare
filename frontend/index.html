@@ -2388,11 +2388,23 @@
       }
     }
 
-    /* Login visual language */
-    .login-overlay { background: radial-gradient(circle at 12% 12%, rgba(215,229,143,.22), transparent 27%), var(--paper); }
-    .auth-panel { overflow: hidden; background: transparent; }
-    .auth-panel::before { content: ""; position: absolute; width: 430px; aspect-ratio: 1; right: -240px; bottom: -250px; border: 1px solid rgba(21,63,50,.12); border-radius: 50%; box-shadow: 0 0 0 68px rgba(21,63,50,.035), 0 0 0 136px rgba(21,63,50,.02); pointer-events: none; }
-    .auth-card { position: relative; z-index: 1; padding: clamp(28px, 4vw, 48px); background: rgba(255,255,255,.76); border: 1px solid rgba(17,18,15,.1); border-radius: 30px; box-shadow: 0 28px 70px rgba(15,32,26,.10); backdrop-filter: blur(14px); }
+    /* Login visual language.
+
+       No card. The form sits straight on the panel, the way the IT support
+       sign-in does: nothing framing it, nothing floating above it, so the
+       left side reads as one surface running up to the green. */
+    .login-overlay { background: var(--paper); }
+    .auth-panel { overflow: hidden; background: var(--paper); }
+    .auth-card {
+      position: relative;
+      z-index: 1;
+      padding: 0;
+      background: none;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      backdrop-filter: none;
+    }
     .back-home { min-height: 42px; padding: 0 17px; display: inline-flex; align-items: center; justify-content: center; color: var(--paper); background: var(--green); border: 1px solid rgba(21,63,50,.18); border-radius: 999px; box-shadow: 0 10px 24px rgba(15,32,26,.12); font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; transition: transform .25s var(--ease), background .25s ease, box-shadow .25s ease; }
     .back-home:hover { color: var(--green); background: var(--lime); box-shadow: 0 14px 28px rgba(15,32,26,.16); transform: translateY(-2px); }
     .role-block { width: 118px; padding: 23px 10px 19px; border-radius: 18px; }

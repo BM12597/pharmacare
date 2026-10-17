@@ -600,3 +600,263 @@ body.dark .tag.severe { color: #0e1210; background: #e8897c; }
   #map { height: 300px; }
   .map-legend .map-note { margin-left: 0; flex: 1 1 100%; }
 }
+
+/* ==================================================================
+   Patient file viewer
+   Shared look across the three workspaces that can open a file. The
+   rules are repeated in each stylesheet so the pages stay independent.
+   ================================================================== */
+
+/* ---------- a wide sheet, not the small modal ---------- */
+
+.sheet { width: min(100%, 1020px); padding: 0; overflow: hidden; }
+
+.sheet-head {
+  position: sticky; top: 0; z-index: 2;
+  display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap;
+  padding: 20px 24px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.sheet-head .who-big { flex: 1; min-width: 0; }
+.sheet-head h2 { margin: 0 0 3px; font-size: 20px; }
+.sheet-head .sheet-sub { margin: 0; color: var(--muted); font-size: 12px; }
+.sheet-head .sheet-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.sheet-body { max-height: min(74dvh, 760px); overflow-y: auto; padding: 20px 24px 24px; }
+
+.sheet-foot {
+  position: sticky; bottom: 0;
+  display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+  padding: 14px 24px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+
+.sheet-foot .foot-note { margin-left: auto; color: var(--muted); font-size: 12px; }
+
+/* ---------- the record beside the original ---------- */
+
+.sheet-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px); gap: 20px; align-items: start; }
+
+.section { margin-bottom: 22px; }
+.section:last-child { margin-bottom: 0; }
+
+.section-head {
+  display: flex; align-items: baseline; gap: 9px;
+  margin-bottom: 10px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--line);
+}
+
+.section-no {
+  color: var(--green);
+  font-size: 11px; font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .06em;
+}
+
+.section-head h4 { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+
+/* Two columns of label/value on wide screens, one on a phone. */
+.field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 2px 20px; }
+
+.field { display: flex; justify-content: space-between; gap: 14px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+.field:last-child { border-bottom: 0; }
+.field > .label { color: var(--muted); flex: none; }
+.field > .value { font-weight: 600; text-align: right; min-width: 0; overflow-wrap: anywhere; }
+.field > .value.empty { color: var(--muted); font-weight: 400; }
+.field.wide { grid-column: 1 / -1; }
+.field.stack { display: block; }
+.field.stack > .label { display: block; margin-bottom: 6px; }
+.field.stack > .value { text-align: left; font-weight: 400; line-height: 1.6; white-space: pre-wrap; }
+
+/* ---------- observations as a small board ---------- */
+
+.obs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 9px; }
+
+.obs {
+  padding: 11px 12px;
+  background: var(--surface-2);
+  border-radius: 10px;
+}
+
+.obs strong { display: block; font-size: 16px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.obs span { color: var(--muted); font-size: 11px; }
+.obs.empty strong { color: var(--muted); font-weight: 400; }
+
+/* ---------- medication ---------- */
+
+.med {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 11px 13px; margin-bottom: 7px;
+  background: var(--surface-2); border-radius: 10px;
+  font-size: 13px;
+}
+
+.med strong { font-weight: 600; }
+.med .how { color: var(--muted); font-size: 12px; }
+
+/* ---------- the original document ---------- */
+
+.original { position: sticky; top: 0; }
+
+.pdf-frame {
+  width: 100%;
+  height: 460px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 11px;
+}
+
+.pdf-note { margin: 9px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+
+.doc-row {
+  display: flex; align-items: center; gap: 11px;
+  padding: 11px 13px; margin-bottom: 8px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  font-size: 13px;
+}
+
+.doc-row .file-icon {
+  display: grid; place-items: center;
+  width: 30px; height: 30px; flex: none;
+  color: var(--green); background: var(--green-soft);
+  border-radius: 8px; font-size: 10px; font-weight: 800;
+}
+
+.doc-row .doc-name { flex: 1; min-width: 0; }
+.doc-row .doc-name strong { display: block; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.doc-row .doc-name span { color: var(--muted); font-size: 11px; }
+
+/* ---------- unconfirmed banner ---------- */
+
+.flagged {
+  display: flex; gap: 11px;
+  padding: 13px 15px; margin-bottom: 18px;
+  background: var(--warn-bg); border-radius: 11px;
+  font-size: 12px; line-height: 1.55;
+}
+
+.flagged svg { width: 17px; height: 17px; flex: none; margin-top: 1px; color: var(--warn); }
+.flagged strong { display: block; margin-bottom: 2px; color: var(--warn); font-size: 12px; }
+
+.tag.review { color: var(--warn); background: var(--warn-bg); }
+
+/* ---------- edit history ---------- */
+
+.history-row { display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
+.history-row:last-child { border-bottom: 0; }
+.history-row .when { flex: none; width: 108px; color: var(--muted); }
+.history-row .what { flex: 1; min-width: 0; line-height: 1.55; }
+.history-row .what strong { font-weight: 600; }
+.history-row .what span { display: block; margin-top: 2px; color: var(--muted); }
+
+/* ---------- an honest empty state ---------- */
+
+.gap {
+  display: flex; gap: 11px;
+  padding: 16px;
+  background: var(--surface-2); border-radius: 11px;
+  color: var(--muted); font-size: 12px; line-height: 1.55;
+}
+
+.gap svg { width: 16px; height: 16px; flex: none; margin-top: 1px; }
+
+/* ==================================================================
+   Upload, stage by stage
+
+   Each row lights up when the server says that step finished, so what is
+   on screen is work that actually happened rather than a timed guess.
+   ================================================================== */
+
+.upload-card {
+  padding: 16px 18px; margin-top: 10px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+}
+
+.upload-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.upload-top .file-icon {
+  display: grid; place-items: center;
+  width: 34px; height: 34px; flex: none;
+  color: var(--green); background: var(--green-soft);
+  border-radius: 9px; font-size: 11px; font-weight: 800;
+}
+.upload-top .upload-name { flex: 1; min-width: 0; }
+.upload-top .upload-name strong { display: block; font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.upload-top .upload-name span { color: var(--muted); font-size: 12px; }
+
+.stages { position: relative; padding-left: 4px; }
+
+.stage { position: relative; display: flex; gap: 13px; padding-bottom: 15px; }
+.stage:last-child { padding-bottom: 0; }
+
+/* the line joining one step to the next */
+.stage::before {
+  content: ""; position: absolute;
+  left: 8px; top: 19px; bottom: 0;
+  width: 2px; background: var(--track);
+}
+.stage:last-child::before { display: none; }
+
+.stage.done::before { background: var(--green); }
+
+.stage-dot {
+  position: relative; z-index: 1;
+  flex: none; width: 18px; height: 18px;
+  display: grid; place-items: center;
+  background: var(--surface);
+  border: 2px solid var(--track);
+  border-radius: 50%;
+}
+
+.stage-dot svg { width: 10px; height: 10px; opacity: 0; transition: opacity .2s ease; }
+
+.stage.working .stage-dot { border-color: var(--green); animation: stagePulse 1.1s ease-in-out infinite; }
+.stage.done .stage-dot { background: var(--green); border-color: var(--green); }
+.stage.done .stage-dot svg { color: var(--surface); opacity: 1; }
+body.dark .stage.done .stage-dot svg { color: #0e1210; }
+.stage.failed .stage-dot { background: var(--danger); border-color: var(--danger); }
+.stage.failed .stage-dot svg { color: #fff; opacity: 1; }
+
+@keyframes stagePulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--green-soft); }
+  50% { box-shadow: 0 0 0 5px var(--green-soft); }
+}
+
+.stage-copy { flex: 1; min-width: 0; padding-top: 1px; }
+.stage-copy strong { display: block; font-size: 13px; font-weight: 600; color: var(--muted); transition: color .2s ease; }
+.stage.working .stage-copy strong, .stage.done .stage-copy strong { color: var(--ink); }
+.stage.failed .stage-copy strong { color: var(--danger); }
+.stage-copy span { display: block; margin-top: 2px; color: var(--muted); font-size: 11.5px; line-height: 1.5; }
+
+/* real byte progress for the first step */
+.stage-bar { height: 4px; margin-top: 7px; background: var(--track); border-radius: 999px; overflow: hidden; }
+.stage-bar i { display: block; height: 100%; width: 0; background: var(--green); border-radius: 999px; transition: width .2s linear; }
+
+.upload-done {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 14px; padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+
+.upload-done .ready { flex: 1; min-width: 0; line-height: 1.5; }
+.upload-done .ready strong { font-weight: 700; }
+
+@media (max-width: 900px) {
+  .sheet-cols { grid-template-columns: 1fr; }
+  .original { position: static; }
+  .pdf-frame { height: 360px; }
+}
+
+@media (max-width: 560px) {
+  .sheet-head, .sheet-body, .sheet-foot { padding-left: 16px; padding-right: 16px; }
+  .sheet-foot .foot-note { margin-left: 0; flex: 1 1 100%; }
+  .field { display: block; }
+  .field > .label { display: block; margin-bottom: 3px; }
+  .field > .value { text-align: left; }
+  .history-row { display: block; }
+  .history-row .when { width: auto; margin-bottom: 3px; }
+}

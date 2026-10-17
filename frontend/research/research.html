@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>Research workspace — PharmaCare+</title>
+  <link rel="stylesheet" href="/static/research/research.css" />
+</head>
+<body>
+
+  <header class="mobile-bar">
+    <button class="burger" type="button" id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <div class="side-brand">
+      <span class="side-mark" aria-hidden="true"></span>
+      <span>PharmaCare+</span>
+    </div>
+  </header>
+
+  <div class="nav-backdrop" id="navBackdrop"></div>
+
+  <div class="portal">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="side-brand">
+        <span class="side-mark" aria-hidden="true"></span>
+        <span>PharmaCare+</span>
+      </div>
+
+      <nav class="side-nav" id="sideNav">
+        <button type="button" class="active" data-panel="dataset">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6.2" rx="7.6" ry="2.8"/><path d="M4.4 6.2v11.6c0 1.5 3.4 2.8 7.6 2.8s7.6-1.3 7.6-2.8V6.2"/><path d="M4.4 12c0 1.6 3.4 2.8 7.6 2.8s7.6-1.2 7.6-2.8"/></svg>
+          <span data-i18n="nav.dataset">Dataset</span>
+        </button>
+        <button type="button" data-panel="results">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.4V9.6M9.4 19.4V4.6M14.8 19.4v-7M20.2 19.4v-11"/></svg>
+          <span data-i18n="nav.results">Results</span>
+        </button>
+        <button type="button" data-panel="models">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.4 20 7.6v8.8L12 20.6 4 16.4V7.6Z"/><path d="M4 7.6 12 12l8-4.4M12 12v8.6"/></svg>
+          <span data-i18n="nav.models">Models</span>
+        </button>
+        <button type="button" data-panel="review">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3.6h9a1.8 1.8 0 0 1 1.8 1.8v13.2A1.8 1.8 0 0 1 18 20.4H6a1.8 1.8 0 0 1-1.8-1.8V8.4Z"/><path d="M8.4 12.4h7.2M8.4 16h4.8"/></svg>
+          <span data-i18n="nav.review">Review queue</span>
+          <span class="nav-count" id="reviewCount" hidden></span>
+        </button>
+        <button type="button" data-panel="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M19.6 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-2.87 1.2V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-2.97-1.14l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 3.1 14H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.14-2.97l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 10 4.1V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.97 1.14l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 20.9 10H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.3 1Z"/></svg>
+          <span data-i18n="nav.settings">Settings</span>
+        </button>
+      </nav>
+
+      <div class="side-foot">
+        <div class="side-who">
+          <div class="side-user">P. Naidoo</div>
+          <div class="side-role">Researcher · DGMH-RS-0007</div>
+        </div>
+        <button class="sign-out" type="button" id="signOut">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.4 16.6 19 12l-4.6-4.6"/><path d="M19 12H8.6"/><path d="M11.4 4.4H6.2a1.8 1.8 0 0 0-1.8 1.8v11.6a1.8 1.8 0 0 0 1.8 1.8h5.2"/></svg>
+          <span data-i18n="action.signout">Sign out</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="content">
+
+      <!-- ---------- DATASET ---------- -->
+      <section class="panel active" data-panel="dataset">
+        <div class="panel-head">
+          <h1 data-i18n="dataset.title">Dataset</h1>
+          <p data-i18n="dataset.sub">Upload interaction data, check what is in it, then train.</p>
+        </div>
+
+        <div class="stepper" id="stepper">
+          <div class="step-chip active" data-step="1"><b>1</b><span data-i18n="step.upload">Upload</span></div>
+          <div class="step-chip" data-step="2"><b>2</b><span data-i18n="step.map">Check columns</span></div>
+          <div class="step-chip" data-step="3"><b>3</b><span data-i18n="step.train">Train</span></div>
+        </div>
+
+        <div class="card" style="margin-bottom:14px">
+          <h3 data-i18n="dataset.upload">Upload</h3>
+          <p class="card-sub" data-i18n="dataset.uploadSub">CSV or Excel, up to 25 MB. One row per drug pair.</p>
+
+          <div class="dropzone" id="dropzone" role="button" tabindex="0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20.4 15.6v2.8a2 2 0 0 1-2 2H5.6a2 2 0 0 1-2-2v-2.8"/><path d="M8 9.2 12 5.2l4 4"/><path d="M12 5.2v10.4"/></svg>
+            <strong data-i18n="dataset.drop">Drop a file here, or click to choose</strong>
+            <span data-i18n="dataset.dropSub">Nothing is stored on the server</span>
+          </div>
+
+          <input type="file" id="fileInput" accept=".csv,.tsv,.xlsx,.xls" hidden />
+          <div id="fileState" style="margin-top:12px"></div>
+        </div>
+
+        <div id="profilePanel"></div>
+      </section>
+
+      <!-- ---------- RESULTS ---------- -->
+      <section class="panel" data-panel="results">
+        <div class="panel-head">
+          <h1 data-i18n="results.title">Results</h1>
+          <p data-i18n="results.sub">Two models on the same split, so they can be compared honestly.</p>
+        </div>
+        <div id="resultsPanel"></div>
+      </section>
+
+      <!-- ---------- MODELS ---------- -->
+      <section class="panel" data-panel="models">
+        <div class="panel-head">
+          <h1 data-i18n="models.title">Models</h1>
+          <p data-i18n="models.sub">Every training run, kept with its scores. One of them answers the prescribing check.</p>
+        </div>
+        <div id="livePanel"></div>
+        <div id="modelRows"></div>
+      </section>
+
+      <!-- ---------- REVIEW QUEUE ---------- -->
+      <section class="panel" data-panel="review">
+        <div class="panel-head">
+          <h1 data-i18n="review.title">Review queue</h1>
+          <p data-i18n="review.sub">Pairs the model was unsure about, sent here for a human decision.</p>
+        </div>
+
+        <div class="toolbar">
+          <input type="search" id="reviewSearch" placeholder="Search a drug pair" data-i18n-ph="review.search" autocomplete="off" />
+          <select id="reviewStatus">
+            <option value="waiting" data-i18n="review.waiting">Waiting</option>
+            <option value="confirmed" data-i18n="review.confirmed">Confirmed</option>
+            <option value="rejected" data-i18n="review.rejected">Rejected</option>
+            <option value="all" data-i18n="review.all">All</option>
+          </select>
+        </div>
+
+        <p class="result-count" id="reviewSummary"></p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="table.pair">Drug pair</th>
+                <th data-i18n="table.confidence">Model confidence</th>
+                <th data-i18n="table.prediction">Prediction</th>
+                <th data-i18n="table.source">Raised by</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="reviewRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ---------- SETTINGS ---------- -->
+      <section class="panel" data-panel="settings">
+        <div class="panel-head">
+          <h1 data-i18n="settings.title">Settings</h1>
+          <p data-i18n="settings.sub">Applies to this workspace only.</p>
+        </div>
+
+        <div class="settings-grid">
+          <div class="card">
+            <h3 data-i18n="settings.appearance">Appearance</h3>
+            <p class="card-sub" data-i18n="settings.appearanceSub">Long sessions are easier on a dark screen.</p>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.theme">Theme</strong>
+                <span data-i18n="settings.themeSub">Light or dark across the workspace</span>
+              </div>
+              <div class="segmented" id="themeToggle">
+                <button type="button" data-theme="light" class="active" data-i18n="settings.light">Light</button>
+                <button type="button" data-theme="dark" data-i18n="settings.dark">Dark</button>
+              </div>
+            </div>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.language">Language</strong>
+                <span data-i18n="settings.languageSub">Labels and headings</span>
+              </div>
+              <select id="langSelect">
+                <option value="en">English</option>
+                <option value="af">Afrikaans</option>
+                <option value="zu">isiZulu</option>
+                <option value="nso">Sepedi</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 data-i18n="settings.training">Training</h3>
+            <p class="card-sub" data-i18n="settings.trainingSub">How the data is split and scored.</p>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.testSize">Test set</strong>
+                <span data-i18n="settings.testSizeSub">Share held back to score the model</span>
+              </div>
+              <select id="setTestSize">
+                <option value="0.1">10%</option>
+                <option value="0.2" selected>20%</option>
+                <option value="0.3">30%</option>
+              </select>
+            </div>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.leak">Warn about leakage</strong>
+                <span data-i18n="settings.leakSub">Flag a column that gives the answer away</span>
+              </div>
+              <label class="switch"><input type="checkbox" id="setLeak" checked /><span></span></label>
+            </div>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.threshold">Send for review below</strong>
+                <span data-i18n="settings.thresholdSub">Confidence under this needs a human</span>
+              </div>
+              <input type="number" id="setThreshold" value="70" min="50" max="95" step="5" style="width:88px" />
+            </div>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.autoRaise">Queue uncertain pairs</strong>
+                <span data-i18n="settings.autoRaiseSub">Add them automatically when a prescription is screened</span>
+              </div>
+              <label class="switch"><input type="checkbox" id="setAutoRaise" checked /><span></span></label>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn" type="button" id="saveSettings" data-i18n="settings.save">Save settings</button>
+          <span class="card-sub" id="settingsState" style="margin:0"></span>
+        </div>
+        <p class="hint" style="margin-top:10px;max-width:620px" data-i18n="settings.shared">
+          The test set, leakage warning, threshold and queueing apply to the whole
+          workspace, not just this browser — they decide what the server does. Theme
+          and language are yours alone and stay on this device.
+        </p>
+      </section>
+
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="/static/research/research.js"></script>
+</body>
+</html>

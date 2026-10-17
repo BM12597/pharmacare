@@ -1,0 +1,49 @@
+# Render reads this instead of the dashboard form. Everything marked sync:false
+# is typed into the dashboard once and never committed.
+
+services:
+  - type: web
+    name: pharmacare
+    runtime: python
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: cd backend && gunicorn config.wsgi:application --workers 1 --timeout 120
+
+    # One worker on purpose. The interaction models are about 40 MB in memory
+    # and each worker loads its own copy, so two of them do not fit in the free
+    # tier's 512 MB. The 120 second timeout is for the first request after a
+    # cold start, which pays for loading them.
+
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"
+
+      - key: DJANGO_DEBUG
+        value: "False"
+
+      # Render generates one and keeps it across deploys.
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+
+      # Typed into the dashboard, not committed:
+      #   DATABASE_URL          from Supabase, Settings -> Database
+      #   CLOUDINARY_*          three values
+      #   BREVO_SMTP_USER/KEY   from Brevo, SMTP & API -> SMTP
+      #   MAIL_FROM             a verified sender
+      #   ANTHROPIC_API_KEY     for the written second opinion
+      - key: DATABASE_URL
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: BREVO_SMTP_USER
+        sync: false
+      - key: BREVO_SMTP_KEY
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false

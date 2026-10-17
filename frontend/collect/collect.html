@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#153f32" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Collect your medicine — PharmaCare+</title>
+  <link rel="stylesheet" href="/static/collect/collect.css" />
+</head>
+<body>
+
+  <header class="top">
+    <span class="mark" aria-hidden="true"></span>
+    <span class="wordmark">PharmaCare+</span>
+  </header>
+
+  <main class="sheet" id="sheet">
+    <div class="loading" id="loading">
+      <span class="spinner"></span>
+      <span>Loading your prescription…</span>
+    </div>
+  </main>
+
+  <!-- The camera, shown only once the patient asks for it. -->
+  <div class="scanner" id="scanner" hidden>
+    <div class="scanner-head">
+      <strong>Point at the pharmacist's screen</strong>
+      <button class="close-scan" type="button" id="closeScan" aria-label="Stop scanning">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+
+    <div class="viewport">
+      <video id="video" playsinline muted></video>
+      <div class="reticle" aria-hidden="true"></div>
+    </div>
+
+    <p class="scan-hint" id="scanHint">Looking for a code…</p>
+    <canvas id="frame" hidden></canvas>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="/static/collect/jsQR.js"></script>
+  <script src="/static/collect/collect.js"></script>
+</body>
+</html>

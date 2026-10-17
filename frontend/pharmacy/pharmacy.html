@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>Pharmacy workspace — PharmaCare+</title>
+  <link rel="stylesheet" href="/static/pharmacy/pharmacy.css" />
+</head>
+<body>
+
+  <header class="mobile-bar">
+    <button class="burger" type="button" id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <div class="side-brand">
+      <span class="side-mark" aria-hidden="true"></span>
+      <span>PharmaCare+</span>
+    </div>
+  </header>
+
+  <div class="nav-backdrop" id="navBackdrop"></div>
+
+  <div class="portal">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="side-brand">
+        <span class="side-mark" aria-hidden="true"></span>
+        <span>PharmaCare+</span>
+      </div>
+
+      <nav class="side-nav" id="sideNav">
+        <button type="button" class="active" data-panel="queue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4.4" y="3.6" width="15.2" height="16.8" rx="2.2"/><path d="M8.6 8.4h6.8M8.6 12h6.8M8.6 15.6h4"/></svg>
+          <span data-i18n="nav.queue">Queue</span>
+        </button>
+        <button type="button" data-panel="stock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 7.4 12 3.4l8.4 4v9.2L12 20.6l-8.4-4Z"/><path d="M3.6 7.4 12 11.6l8.4-4.2M12 11.6v9"/></svg>
+          <span data-i18n="nav.stock">Stock</span>
+        </button>
+        <button type="button" data-panel="patients">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.6" cy="10.6" r="6.2"/><path d="M15.2 15.2 20 20"/></svg>
+          <span data-i18n="nav.patients">Patients</span>
+        </button>
+        <button type="button" data-panel="dispensed">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.4"/><path d="m8.4 12.2 2.4 2.4 4.8-4.8"/></svg>
+          <span data-i18n="nav.dispensed">Dispensed</span>
+        </button>
+        <button type="button" data-panel="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M19.6 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-2.87 1.2V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-2.97-1.14l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 3.1 14H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.14-2.97l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 10 4.1V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.97 1.14l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 20.9 10H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.3 1Z"/></svg>
+          <span data-i18n="nav.settings">Settings</span>
+        </button>
+      </nav>
+
+      <div class="side-foot">
+        <div class="side-who">
+          <div class="side-user">T. Mokoena</div>
+          <div class="side-role">Pharmacist · DGMH-PH-0142</div>
+        </div>
+        <button class="sign-out" type="button" id="signOut">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.4 16.6 19 12l-4.6-4.6"/><path d="M19 12H8.6"/><path d="M11.4 4.4H6.2a1.8 1.8 0 0 0-1.8 1.8v11.6a1.8 1.8 0 0 0 1.8 1.8h5.2"/></svg>
+          <span data-i18n="action.signout">Sign out</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="content">
+
+      <!-- ---------- QUEUE ---------- -->
+      <section class="panel active" data-panel="queue">
+        <div class="panel-head">
+          <h1 data-i18n="queue.title">Prescription queue</h1>
+          <p data-i18n="queue.sub">Sorted by severity, not by arrival. Check the warning before dispensing.</p>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat">
+            <strong id="statWaiting">0</strong>
+            <span data-i18n="stat.waiting">Waiting</span>
+            <span class="delta" id="statWaitingDelta"></span>
+          </div>
+          <div class="stat">
+            <strong id="statFlagged">0</strong>
+            <span data-i18n="stat.flagged">Flagged</span>
+            <span class="delta" id="statFlaggedDelta"></span>
+          </div>
+          <div class="stat">
+            <strong id="statDispensed">0</strong>
+            <span data-i18n="stat.dispensed">Dispensed today</span>
+            <span class="delta" id="statDispensedDelta"></span>
+          </div>
+          <div class="stat">
+            <strong id="statOut">0</strong>
+            <span data-i18n="stat.out">Out of stock</span>
+            <span class="delta" id="statOutDelta"></span>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <input type="search" id="queueSearch" placeholder="Search by patient, file number or drug"
+                 data-i18n-ph="queue.search" autocomplete="off" />
+          <select id="queueFilter">
+            <option value="" data-i18n="queue.allFlags">All prescriptions</option>
+            <option value="severe" data-i18n="risk.severe">Severe only</option>
+            <option value="moderate" data-i18n="risk.moderate">Moderate only</option>
+            <option value="clear" data-i18n="risk.clear">No warning</option>
+          </select>
+        </div>
+
+        <div id="queueList"></div>
+      </section>
+
+      <!-- ---------- STOCK ---------- -->
+      <section class="panel" data-panel="stock">
+        <div class="panel-head">
+          <h1 data-i18n="stock.title">Stock</h1>
+          <p data-i18n="stock.sub">A substitution is only useful if the substitute is on the shelf.</p>
+        </div>
+
+        <div class="toolbar">
+          <input type="search" id="stockSearch" placeholder="Search a drug" data-i18n-ph="stock.search" autocomplete="off" />
+          <select id="stockFilter">
+            <option value="" data-i18n="stock.allItems">All items</option>
+            <option value="low" data-i18n="stock.lowOnly">Low stock</option>
+            <option value="out" data-i18n="stock.outOnly">Out of stock</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="table.drug">Drug</th>
+                <th data-i18n="table.form">Form</th>
+                <th data-i18n="table.level">Level</th>
+                <th data-i18n="table.reorder">Reorder at</th>
+                <th data-i18n="table.status">Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="stockRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ---------- PATIENTS ----------
+           The same record the doctor writes and the admin reads in. This
+           workspace reads it and downloads the original; it does not change
+           it, which is why there is no edit button here. -->
+      <section class="panel" data-panel="patients">
+        <div class="panel-head">
+          <h1 data-i18n="patients.title">Patient files</h1>
+          <p data-i18n="patients.sub">What is on record for the patient in front of you. Read only — a doctor changes the file.</p>
+        </div>
+
+        <div class="toolbar">
+          <input type="search" id="patientSearch" placeholder="Search by name, file number or ID number"
+                 data-i18n-ph="patients.search" autocomplete="off" />
+          <select id="conditionFilter">
+            <option value="" data-i18n="patients.allConditions">All conditions</option>
+          </select>
+        </div>
+
+        <p class="result-count" id="resultCount"></p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="table.patient">Patient</th>
+                <th data-i18n="table.file">File number</th>
+                <th data-i18n="table.conditions">Conditions</th>
+                <th data-i18n="table.allergies">Allergies</th>
+                <th data-i18n="table.updated">Last updated</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="patientRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ---------- DISPENSED ---------- -->
+      <section class="panel" data-panel="dispensed">
+        <div class="panel-head">
+          <h1 data-i18n="dispensed.title">Dispensed</h1>
+          <p data-i18n="dispensed.sub">What went out, who handed it over and when.</p>
+        </div>
+
+        <div class="toolbar">
+          <input type="search" id="dispensedSearch" placeholder="Search by patient or drug"
+                 data-i18n-ph="dispensed.search" autocomplete="off" />
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="table.patient">Patient</th>
+                <th data-i18n="table.drugs">Drugs</th>
+                <th data-i18n="table.doctor">Prescriber</th>
+                <th data-i18n="table.outcome">Outcome</th>
+                <th data-i18n="table.when">When</th>
+              </tr>
+            </thead>
+            <tbody id="dispensedRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ---------- SETTINGS ---------- -->
+      <section class="panel" data-panel="settings">
+        <div class="panel-head">
+          <h1 data-i18n="settings.title">Settings</h1>
+          <p data-i18n="settings.sub">Applies to this workspace only.</p>
+        </div>
+
+        <div class="settings-grid">
+          <div class="card">
+            <h3 data-i18n="settings.appearance">Appearance</h3>
+            <p class="card-sub" data-i18n="settings.appearanceSub">Dispensary screens are often dimmed at night.</p>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.theme">Theme</strong>
+                <span data-i18n="settings.themeSub">Light or dark across the workspace</span>
+              </div>
+              <div class="segmented" id="themeToggle">
+                <button type="button" data-theme="light" class="active" data-i18n="settings.light">Light</button>
+                <button type="button" data-theme="dark" data-i18n="settings.dark">Dark</button>
+              </div>
+            </div>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.language">Language</strong>
+                <span data-i18n="settings.languageSub">Labels and statistics</span>
+              </div>
+              <select id="langSelect">
+                <option value="en">English</option>
+                <option value="af">Afrikaans</option>
+                <option value="zu">isiZulu</option>
+                <option value="nso">Sepedi</option>
+              </select>
+            </div>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.numbers">Number format</strong>
+                <span data-i18n="settings.numbersSub">How figures are written</span>
+              </div>
+              <select id="localeSelect">
+                <option value="en-ZA">South Africa (1 234,5)</option>
+                <option value="en-GB">United Kingdom (1,234.5)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 data-i18n="settings.queue">Queue</h3>
+            <p class="card-sub" data-i18n="settings.queueSub">How incoming prescriptions are ordered and shown.</p>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.sortSeverity">Sort by severity</strong>
+                <span data-i18n="settings.sortSeveritySub">Severe warnings first, rather than oldest first</span>
+              </div>
+              <label class="switch"><input type="checkbox" id="setSortSeverity" checked /><span></span></label>
+            </div>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.showOverride">Always show override reasons</strong>
+                <span data-i18n="settings.showOverrideSub">Expanded rather than hidden behind a click</span>
+              </div>
+              <label class="switch"><input type="checkbox" id="setShowOverride" checked /><span></span></label>
+            </div>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.confirmSevere">Confirm severe dispensing</strong>
+                <span data-i18n="settings.confirmSevereSub">Ask again before releasing a severe-flagged script</span>
+              </div>
+              <label class="switch"><input type="checkbox" id="setConfirmSevere" checked /><span></span></label>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 data-i18n="settings.stock">Stock alerts</h3>
+            <p class="card-sub" data-i18n="settings.stockSub">When to warn you before an item runs out.</p>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.lowAt">Flag as low at</strong>
+                <span data-i18n="settings.lowAtSub">Percentage of the reorder level</span>
+              </div>
+              <input type="number" id="setLowAt" value="120" min="100" max="300" step="10" style="width:88px" />
+            </div>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.hideOut">Hide out-of-stock substitutes</strong>
+                <span data-i18n="settings.hideOutSub">Do not suggest what you cannot dispense</span>
+              </div>
+              <label class="switch"><input type="checkbox" id="setHideOut" checked /><span></span></label>
+            </div>
+
+            <div class="setting">
+              <div class="setting-copy">
+                <strong data-i18n="settings.dailyStock">Daily stock summary</strong>
+                <span data-i18n="settings.dailyStockSub">A list of low items at the start of each shift</span>
+              </div>
+              <label class="switch"><input type="checkbox" id="setDailyStock" /><span></span></label>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:18px">
+          <button class="btn" type="button" id="saveSettings" data-i18n="settings.save">Save settings</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==================== PRESCRIPTION ==================== -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h2 id="modalTitle">Prescription</h2>
+      <p id="modalSub"></p>
+
+      <div id="modalBody"></div>
+
+      <div class="modal-actions">
+        <button class="btn" type="button" id="dispenseButton" data-i18n="action.dispense">Dispense</button>
+        <button class="btn ghost" type="button" id="queryButton" data-i18n="action.query">Query with doctor</button>
+        <button class="btn ghost" type="button" id="closeModal" data-i18n="action.close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PATIENT FILE ====================
+       Its own sheet, separate from the prescription one, so a pharmacist can
+       open the file while a prescription is on screen. -->
+  <div class="modal-backdrop" id="fileBackdrop">
+    <div class="modal sheet" role="dialog" aria-modal="true" aria-labelledby="fileTitle">
+
+      <header class="sheet-head">
+        <div class="who-big">
+          <h2 id="fileTitle">Patient file</h2>
+          <p class="sheet-sub" id="fileSub"></p>
+        </div>
+        <div class="sheet-tools" id="fileTools"></div>
+      </header>
+
+      <div class="sheet-body" id="fileBody"></div>
+
+      <footer class="sheet-foot">
+        <button class="btn ghost" type="button" id="closeFile" data-i18n="action.close">Close</button>
+        <span class="foot-note" id="fileFoot"></span>
+      </footer>
+
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="/static/pharmacy/pharmacy.js"></script>
+</body>
+</html>

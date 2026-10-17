@@ -102,7 +102,7 @@
 
           <div class="card">
             <h3 data-i18n="chart.storage">Storage</h3>
-            <p class="card-sub" data-i18n="chart.storageSub">Patient files, uploads and model data</p>
+            <p class="card-sub" data-i18n="chart.storageSub">Live figures from Cloudinary</p>
             <div class="gauge-wrap">
               <div id="gauge" style="width:100%;display:grid;place-items:center"></div>
               <div class="gauge-read">
@@ -129,9 +129,15 @@
 
           <div class="card">
             <h3 data-i18n="chart.health">System health</h3>
-            <p class="card-sub" data-i18n="chart.healthSub">Checked a moment ago</p>
+            <p class="card-sub" data-i18n="chart.healthSub">Checked each time this page loads</p>
             <div id="healthList" style="margin-top:4px"></div>
           </div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <h3 data-i18n="chart.activity">Recent changes</h3>
+          <p class="card-sub" data-i18n="chart.activitySub">Who issued, changed or revoked what</p>
+          <div id="activityList" style="margin-top:6px"></div>
         </div>
       </section>
 

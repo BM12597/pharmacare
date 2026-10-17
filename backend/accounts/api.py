@@ -13,7 +13,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
 
-from .models import Role
+from .models import ActivityLog, Role
 
 # Who may open the management portal.
 MANAGEMENT_ROLES = {Role.IT_SUPPORT}
@@ -63,6 +63,12 @@ def login_view(request):
     # One message for a wrong ID and a wrong password, so nobody can use this
     # endpoint to work out which staff IDs exist.
     if user is None:
+        # Recorded so the portal can show a spike in failed sign-ins, which is
+        # the first sign of somebody guessing at staff IDs.
+        ActivityLog.record(
+            ActivityLog.Action.LOGIN_FAILED, None, user_id,
+            f"Failed sign in for {user_id or 'a blank ID'}",
+        )
         return JsonResponse(
             {"detail": "Those details did not work. Check the ID and try again."},
             status=401,

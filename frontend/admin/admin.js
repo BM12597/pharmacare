@@ -1,10 +1,21 @@
 /* PharmaCare+ — admin workspace.
-   The figures below are placeholder data. Each block is marked with the
-   query that replaces it once the Django endpoints exist. */
+
+   Every figure on this page is counted in the database. Where something
+   cannot be counted yet, the card says so and why, rather than showing a
+   number nobody could justify.
+
+   What this workspace may do: read every patient file, download the original
+   document, and upload new ones. It may not change a record — only a doctor
+   can do that. The buttons reflect that, and so does the server, which checks
+   again on every request. */
 
 const API = {
   me: '/api/auth/me/',
-  logout: '/api/auth/logout/'
+  logout: '/api/auth/logout/',
+  overview: '/api/admin/overview/',
+  patients: '/api/patients/',
+  files: '/api/patients/files/',
+  upload: '/api/patients/upload/'
 };
 
 const LOGIN_URL = '/login/';
@@ -14,116 +25,66 @@ function getCookie(name) {
   return match ? decodeURIComponent(match[2]) : null;
 }
 
+/* One place for every call, so a dead server or an expired session is handled
+   the same way everywhere. */
+async function callApi(url, options = {}) {
+  const response = await fetch(url, {
+    credentials: 'same-origin',
+    headers: {
+      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      'X-CSRFToken': getCookie('csrftoken') || '',
+      ...(options.headers || {})
+    },
+    ...options
+  });
+
+  if (response.status === 401) {
+    window.location.href = LOGIN_URL;
+    throw new Error('signed out');
+  }
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    // The body is carried on the error, because a refusal often has more to
+    // say than a sentence — a clashing upload names the record it clashes with.
+    const error = new Error(data.detail || 'That did not work.');
+    error.status = response.status;
+    error.data = data;
+    throw error;
+  }
+  return data;
+}
+
 async function requireSession() {
   try {
-    const response = await fetch(API.me, { credentials: 'same-origin' });
-    if (!response.ok) throw new Error('no session');
-
-    const me = await response.json();
-    if (me.role !== 'admin' && !me.is_superuser) throw new Error('wrong workspace');
+    const me = await callApi(API.me);
+    if (me.role !== 'admin' && !me.is_superuser && !me.can_manage) throw new Error('wrong workspace');
 
     document.querySelector('.side-user').textContent = me.full_name || me.user_id;
-    document.querySelector('.side-role').textContent = `${me.role_label} \u00b7 ${me.user_id}`;
+    document.querySelector('.side-role').textContent = `${me.role_label} · ${me.user_id}`;
+    return me;
   } catch (error) {
     window.location.href = LOGIN_URL;
+    return null;
   }
 }
 
-requireSession();
-
 /* ==================================================================
-   Placeholder data
+   State — filled from the server, never seeded with examples
    ================================================================== */
 
-// → GET /api/patients/
-const patients = [
-  { file: 'DGMH-2026-04812', name: 'Thandiwe Mabaso', age: 63, sex: 'F', ward: 'Internal medicine',
-    conditions: ['Type 2 diabetes', 'Hypertension'], meds: ['Metformin', 'Enalapril', 'Simvastatin'],
-    risk: 'severe', updated: 'Today, 08:20', allergies: 'Penicillin' },
-  { file: 'DGMH-2026-04799', name: 'Sipho Ndlovu', age: 47, sex: 'M', ward: 'Casualty',
-    conditions: ['Epilepsy'], meds: ['Carbamazepine', 'Warfarin'],
-    risk: 'severe', updated: 'Today, 07:55', allergies: 'None recorded' },
-  { file: 'DGMH-2026-04781', name: 'Lerato Molefe', age: 29, sex: 'F', ward: 'Maternity',
-    conditions: ['Anaemia'], meds: ['Ferrous sulphate', 'Folic acid'],
-    risk: 'none', updated: 'Yesterday, 16:10', allergies: 'None recorded' },
-  { file: 'DGMH-2026-04770', name: 'Johannes Pretorius', age: 71, sex: 'M', ward: 'Internal medicine',
-    conditions: ['Atrial fibrillation', 'Hypertension'], meds: ['Warfarin', 'Amiodarone', 'Furosemide'],
-    risk: 'severe', updated: 'Yesterday, 14:32', allergies: 'Sulfa drugs' },
-  { file: 'DGMH-2026-04766', name: 'Nomsa Dube', age: 38, sex: 'F', ward: 'Internal medicine',
-    conditions: ['HIV', 'Tuberculosis'], meds: ['Dolutegravir', 'Rifampicin', 'Isoniazid'],
-    risk: 'moderate', updated: 'Yesterday, 11:04', allergies: 'None recorded' },
-  { file: 'DGMH-2026-04751', name: 'Kabelo Motaung', age: 8, sex: 'M', ward: 'Paediatrics',
-    conditions: ['Asthma'], meds: ['Salbutamol', 'Beclomethasone'],
-    risk: 'none', updated: '30 Aug 2026', allergies: 'Aspirin' },
-  { file: 'DGMH-2026-04744', name: 'Fatima Patel', age: 55, sex: 'F', ward: 'Internal medicine',
-    conditions: ['Type 2 diabetes', 'Chronic kidney disease'], meds: ['Insulin glargine', 'Metformin'],
-    risk: 'moderate', updated: '30 Aug 2026', allergies: 'None recorded' },
-  { file: 'DGMH-2026-04732', name: 'Peter Nkosi', age: 66, sex: 'M', ward: 'Casualty',
-    conditions: ['Hypertension'], meds: ['Amlodipine', 'Hydrochlorothiazide'],
-    risk: 'none', updated: '29 Aug 2026', allergies: 'None recorded' },
-  { file: 'DGMH-2026-04718', name: 'Grace Sibanda', age: 42, sex: 'F', ward: 'Internal medicine',
-    conditions: ['Depression', 'Migraine'], meds: ['Fluoxetine', 'Sumatriptan'],
-    risk: 'moderate', updated: '28 Aug 2026', allergies: 'None recorded' },
-  { file: 'DGMH-2026-04703', name: 'Andile Zwane', age: 34, sex: 'M', ward: 'Internal medicine',
-    conditions: ['Tuberculosis'], meds: ['Rifampicin', 'Pyrazinamide'],
-    risk: 'none', updated: '27 Aug 2026', allergies: 'None recorded' }
-];
-
-// → GET /api/stats/conditions/
-const diseaseHotspots = [
-  { name: 'Hypertension', ward: 'Internal medicine', count: 1842, change: 12, series: [58, 61, 64, 62, 70, 74, 81] },
-  { name: 'Type 2 diabetes', ward: 'Internal medicine', count: 1361, change: 8, series: [44, 46, 49, 47, 52, 55, 58] },
-  { name: 'Tuberculosis', ward: 'Isolation', count: 604, change: -6, series: [38, 36, 35, 33, 31, 30, 28] },
-  { name: 'Asthma', ward: 'Paediatrics', count: 512, change: 21, series: [18, 20, 22, 26, 29, 33, 38] },
-  { name: 'HIV', ward: 'Internal medicine', count: 488, change: -3, series: [30, 30, 29, 29, 28, 28, 27] }
-];
-
-// → GET /api/stats/interactions/
-const interactionHotspots = [
-  { pair: 'Warfarin + Amiodarone', severity: 'severe', count: 96, change: 18, series: [8, 9, 11, 12, 14, 16, 19] },
-  { pair: 'Rifampicin + Dolutegravir', severity: 'severe', count: 74, change: 9, series: [7, 8, 8, 10, 11, 12, 13] },
-  { pair: 'Carbamazepine + Warfarin', severity: 'severe', count: 58, change: -11, series: [12, 11, 10, 10, 9, 8, 7] },
-  { pair: 'Fluoxetine + Sumatriptan', severity: 'moderate', count: 41, change: 4, series: [5, 5, 6, 6, 6, 7, 7] },
-  { pair: 'Metformin + Contrast dye', severity: 'moderate', count: 33, change: -2, series: [6, 6, 5, 5, 5, 5, 4] }
-];
-
-// → GET /api/stats/geography/
-// Home area of the patients on file. Coordinates are the suburb centre, never
-// a patient address — nothing here identifies anybody.
-const caseAreas = [
-  { area: 'Ga-Rankuwa',   lat: -25.6222, lng: 27.9986, condition: 'Hypertension',    cases: 412, change: 14 },
-  { area: 'Mabopane',     lat: -25.4936, lng: 28.0139, condition: 'Hypertension',    cases: 336, change: 9 },
-  { area: 'Soshanguve',   lat: -25.5333, lng: 28.1000, condition: 'Type 2 diabetes', cases: 298, change: 11 },
-  { area: 'Winterveld',   lat: -25.4500, lng: 27.9333, condition: 'Tuberculosis',    cases: 187, change: -8 },
-  { area: 'Hebron',       lat: -25.5167, lng: 27.9167, condition: 'Tuberculosis',    cases: 121, change: -5 },
-  { area: 'Klipgat',      lat: -25.4667, lng: 27.9667, condition: 'Asthma',          cases: 143, change: 23 },
-  { area: 'Rosslyn',      lat: -25.6167, lng: 28.0833, condition: 'Asthma',          cases: 96,  change: 18 },
-  { area: 'Akasia',       lat: -25.6667, lng: 28.1000, condition: 'Type 2 diabetes', cases: 174, change: 6 },
-  { area: 'Pretoria West',lat: -25.7333, lng: 28.1500, condition: 'HIV',             cases: 128, change: -3 },
-  { area: 'Atteridgeville',lat: -25.7667,lng: 28.0667, condition: 'HIV',             cases: 156, change: -6 }
-];
-
-// → GET /api/stats/wards/
-const wardLoad = [
-  { label: 'Internal medicine', value: 44 },
-  { label: 'Casualty', value: 27 },
-  { label: 'Paediatrics', value: 17 },
-  { label: 'Maternity', value: 12 }
-];
-
-const screenedSeries = [46, 52, 39, 58, 61, 66, 51, 44, 68, 72, 65, 77, 74, 83];
-const screenedDays = ['20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '1', '2'];
-
-const totals = { files: 12480, uploadsThisWeek: 38, flagged: 214, severe: 27, flagRate: 0.19 };
-
-// → GET /api/files/
-let systemFiles = [
-  { name: 'DGMH-2026-04812_bloods.pdf', size: '1.2 MB', when: 'Today, 08:20', kind: 'PDF' },
-  { name: 'DGMH-2026-04799_referral.pdf', size: '840 KB', when: 'Today, 07:58', kind: 'PDF' },
-  { name: 'ward_admissions_august.csv', size: '312 KB', when: 'Yesterday, 17:02', kind: 'CSV' },
-  { name: 'DGMH-2026-04770_ecg.png', size: '2.4 MB', when: 'Yesterday, 14:30', kind: 'PNG' },
-  { name: 'DGMH-2026-04766_sputum.pdf', size: '1.1 MB', when: 'Yesterday, 11:00', kind: 'PDF' }
-];
+const state = {
+  overview: null,
+  patients: [],
+  conditions: [],
+  wards: [],
+  files: [],
+  total: 0,
+  shown: 0,
+  can: { view: false, edit: false, upload: false, download: false },
+  loading: true,
+  error: ''
+};
 
 /* ==================================================================
    Translations
@@ -134,74 +95,80 @@ const STRINGS = {
   af: {
     'nav.overview': 'Oorsig', 'nav.patients': 'Pasiënte', 'nav.files': 'Lêers', 'nav.settings': 'Instellings',
     'action.signout': 'Teken uit', 'action.search': 'Soek', 'action.clear': 'Maak skoon',
-    'action.view': 'Bekyk', 'action.retrieve': 'Haal lêer',
+    'action.view': 'Bekyk', 'action.retrieve': 'Laai af',
     'overview.title': 'Oorsig', 'overview.sub': 'Uit die pasiëntlêers op die stelsel.',
     'stat.files': 'Pasiëntlêers', 'stat.uploads': 'Hierdie week opgelaai',
-    'stat.flagged': 'Interaksies gemerk', 'stat.severe': 'Ernstig hierdie maand',
-    'chart.screened': 'Voorskrifte nagegaan', 'chart.screenedSub': 'Laaste 14 dae',
-    'chart.flagRate': 'Merkkoers', 'chart.flagRateSub': 'Aandeel wat ’n waarskuwing wek',
+    'stat.awaiting': 'Wag op bevestiging', 'stat.docs': 'Dokumente gestoor',
+    'chart.added': 'Lêers bygevoeg', 'chart.addedSub': 'Laaste 14 dae',
+    'chart.review': 'Wag op bevestiging', 'chart.reviewSub': 'Rekords wat ’n dokter nog nie nagegaan het nie',
     'hot.disease': 'Toestand-brandpunte', 'hot.diseaseSub': 'Mees aangetekende toestande',
     'hot.interaction': 'Interaksie-brandpunte', 'hot.interactionSub': 'Middelpare met die meeste waarskuwings',
-    'hot.ward': 'Per saal', 'hot.wardSub': 'Aandeel gemerkte voorskrifte',
+    'hot.ward': 'Per saal', 'hot.wardSub': 'Waar die pasiënte is',
     'patients.title': 'Pasiënte', 'patients.sub': 'Elke pasiënt met ’n lêer op die stelsel.',
     'patients.search': 'Soek op naam, lêernommer of ID', 'patients.allConditions': 'Alle toestande',
     'table.patient': 'Pasiënt', 'table.file': 'Lêernommer', 'table.conditions': 'Toestande',
-    'table.risk': 'Interaksierisiko', 'table.updated': 'Laas bygewerk',
-    'files.title': 'Lêers', 'files.sub': 'Laai ’n lêer op of haal een af.',
-    'files.upload': 'Laai op', 'files.drop': 'Sleep lêers hier, of klik om te kies',
+    'table.risk': 'Status', 'table.updated': 'Laas bygewerk',
+    'files.title': 'Lêers', 'files.sub': 'Laai ’n pasiëntlêer op, of haal een af.',
+    'files.upload': 'Laai ’n pasiëntlêer op', 'files.drop': 'Sleep lêers hier, of klik om te kies',
     'files.recent': 'Op die stelsel',
     'settings.title': 'Instellings', 'settings.appearance': 'Voorkoms', 'settings.theme': 'Tema',
     'settings.light': 'Lig', 'settings.dark': 'Donker', 'settings.language': 'Taal', 'settings.save': 'Stoor instellings',
     'form.cancel': 'Maak toe',
-    'risk.severe': 'Ernstig', 'risk.moderate': 'Matig', 'risk.none': 'Geen'
+    'status.review': 'Nie bevestig nie', 'status.confirmed': 'Bevestig',
+    'stage.store': 'Stoor die lêer', 'stage.read': 'Lees die bladsye',
+    'stage.extract': 'Haal die besonderhede uit', 'stage.record': 'Rekord gereed'
   },
   zu: {
     'nav.overview': 'Ukubuka konke', 'nav.patients': 'Iziguli', 'nav.files': 'Amafayela', 'nav.settings': 'Izilungiselelo',
     'action.signout': 'Phuma', 'action.search': 'Sesha', 'action.clear': 'Sula',
-    'action.view': 'Buka', 'action.retrieve': 'Thola ifayela',
+    'action.view': 'Buka', 'action.retrieve': 'Landa',
     'overview.title': 'Ukubuka konke', 'overview.sub': 'Kusuka kumafayela eziguli akhona.',
     'stat.files': 'Amafayela eziguli', 'stat.uploads': 'Alayishwe kuleli sonto',
-    'stat.flagged': 'Ukuxhumana okuphawuliwe', 'stat.severe': 'Okubucayi kule nyanga',
-    'chart.screened': 'Amaphrisikhripshini ahloliwe', 'chart.screenedSub': 'Izinsuku ezingu-14',
-    'chart.flagRate': 'Izinga lokuphawula', 'chart.flagRateSub': 'Ingxenye edala isexwayiso',
-    'hot.disease': 'Izindawo ezishisayo zezifo', 'hot.diseaseSub': 'Izifo ezibhalwe kakhulu',
+    'stat.awaiting': 'Kulindele ukuqinisekiswa', 'stat.docs': 'Amadokhumenti agciniwe',
+    'chart.added': 'Amafayela engeziwe', 'chart.addedSub': 'Izinsuku ezingu-14',
+    'chart.review': 'Kulindele ukuqinisekiswa', 'chart.reviewSub': 'Amarekhodi udokotela angakawahloli',
+    'hot.disease': 'Izifo ezivamile', 'hot.diseaseSub': 'Izifo ezibhalwe kakhulu',
     'hot.interaction': 'Ukuxhumana kwemithi', 'hot.interactionSub': 'Imithi edala izexwayiso eziningi',
-    'hot.ward': 'Ngewadi', 'hot.wardSub': 'Ingxenye ephawuliwe',
+    'hot.ward': 'Ngewadi', 'hot.wardSub': 'Lapho iziguli zikhona',
     'patients.title': 'Iziguli', 'patients.sub': 'Zonke iziguli ezinamafayela.',
     'patients.search': 'Sesha ngegama noma inombolo yefayela', 'patients.allConditions': 'Zonke izifo',
     'table.patient': 'Isiguli', 'table.file': 'Inombolo yefayela', 'table.conditions': 'Izifo',
-    'table.risk': 'Ubungozi', 'table.updated': 'Kugcine kubuyekezwa',
-    'files.title': 'Amafayela', 'files.sub': 'Layisha noma uthole ifayela.',
-    'files.upload': 'Layisha', 'files.drop': 'Yehlisa amafayela lapha, noma uchofoze',
+    'table.risk': 'Isimo', 'table.updated': 'Kugcine kubuyekezwa',
+    'files.title': 'Amafayela', 'files.sub': 'Layisha ifayela lesiguli, noma ulande elikhona.',
+    'files.upload': 'Layisha ifayela lesiguli', 'files.drop': 'Yehlisa amafayela lapha, noma uchofoze',
     'files.recent': 'Akhona ohlelweni',
     'settings.title': 'Izilungiselelo', 'settings.appearance': 'Ukubukeka', 'settings.theme': 'Itimu',
     'settings.light': 'Okukhanyayo', 'settings.dark': 'Okumnyama', 'settings.language': 'Ulimi', 'settings.save': 'Londoloza',
     'form.cancel': 'Vala',
-    'risk.severe': 'Kubucayi', 'risk.moderate': 'Maphakathi', 'risk.none': 'Lutho'
+    'status.review': 'Akuqinisekisiwe', 'status.confirmed': 'Kuqinisekisiwe',
+    'stage.store': 'Kugcinwa ifayela', 'stage.read': 'Kufundwa amakhasi',
+    'stage.extract': 'Kukhishwa imininingwane', 'stage.record': 'Irekhodi lilungile'
   },
   nso: {
     'nav.overview': 'Kakaretšo', 'nav.patients': 'Balwetši', 'nav.files': 'Difaele', 'nav.settings': 'Dipeakanyo',
     'action.signout': 'Tšwa', 'action.search': 'Nyaka', 'action.clear': 'Hlwekiša',
-    'action.view': 'Lebelela', 'action.retrieve': 'Tšea faele',
+    'action.view': 'Lebelela', 'action.retrieve': 'Laola',
     'overview.title': 'Kakaretšo', 'overview.sub': 'Go tšwa difaeleng tša balwetši.',
     'stat.files': 'Difaele tša balwetši', 'stat.uploads': 'Tše rometšwego bekeng ye',
-    'stat.flagged': 'Dikgokagano tše swailwego', 'stat.severe': 'Tše šoro kgweding ye',
-    'chart.screened': 'Dingwalwa tše hlahlobilwego', 'chart.screenedSub': 'Matšatši a 14 a fetilego',
-    'chart.flagRate': 'Elo ya maswao', 'chart.flagRateSub': 'Karolo yeo e tsošago temošo',
-    'hot.disease': 'Mafelo a malwetši', 'hot.diseaseSub': 'Malwetši a ngwadilwego kudu',
+    'stat.awaiting': 'Tše emetšego netefatšo', 'stat.docs': 'Ditokumente tše bolokilwego',
+    'chart.added': 'Difaele tše oketšegilego', 'chart.addedSub': 'Matšatši a 14 a fetilego',
+    'chart.review': 'Tše emetšego netefatšo', 'chart.reviewSub': 'Direkoto tše ngaka e sa di hlahlobile',
+    'hot.disease': 'Malwetši a atilego', 'hot.diseaseSub': 'Malwetši a ngwadilwego kudu',
     'hot.interaction': 'Dikgokagano tša dihlare', 'hot.interactionSub': 'Dihlare tše di tsošago ditemošo',
-    'hot.ward': 'Ka wate', 'hot.wardSub': 'Karolo ye e swailwego',
+    'hot.ward': 'Ka wate', 'hot.wardSub': 'Moo balwetši ba lego',
     'patients.title': 'Balwetši', 'patients.sub': 'Molwetši yo mongwe le yo mongwe yo a nago le faele.',
     'patients.search': 'Nyaka ka leina goba nomoro ya faele', 'patients.allConditions': 'Malwetši ka moka',
     'table.patient': 'Molwetši', 'table.file': 'Nomoro ya faele', 'table.conditions': 'Malwetši',
-    'table.risk': 'Kotsi', 'table.updated': 'Mpshafatšo ya mafelelo',
-    'files.title': 'Difaele', 'files.sub': 'Romela goba o tšee faele.',
-    'files.upload': 'Romela', 'files.drop': 'Lahlela difaele mo, goba o kgotle',
+    'table.risk': 'Boemo', 'table.updated': 'Mpshafatšo ya mafelelo',
+    'files.title': 'Difaele', 'files.sub': 'Romela faele ya molwetši, goba o laole ye e lego gona.',
+    'files.upload': 'Romela faele ya molwetši', 'files.drop': 'Lahlela difaele mo, goba o kgotle',
     'files.recent': 'Tše di lego gona',
     'settings.title': 'Dipeakanyo', 'settings.appearance': 'Ponagalo', 'settings.theme': 'Sebopego',
     'settings.light': 'Seedi', 'settings.dark': 'Leswiswi', 'settings.language': 'Leleme', 'settings.save': 'Boloka',
     'form.cancel': 'Tswalela',
-    'risk.severe': 'Šoro', 'risk.moderate': 'Magareng', 'risk.none': 'Ga go gona'
+    'status.review': 'Ga se netefatšwe', 'status.confirmed': 'Netefaditšwe',
+    'stage.store': 'Go boloka faele', 'stage.read': 'Go bala matlakala',
+    'stage.extract': 'Go ntšha dintlha', 'stage.record': 'Rekoto e lokile'
   }
 };
 
@@ -226,6 +193,64 @@ function applyLanguage() {
 }
 
 const nf = () => new Intl.NumberFormat(locale);
+
+/* ==================================================================
+   Small helpers
+   ================================================================== */
+
+/* Escaped, because a patient's own file is user-entered text and it ends up
+   inside innerHTML. A surname with an apostrophe should not break the page,
+   and nothing typed into a record should ever run as markup. */
+function esc(value) {
+  if (value === null || value === undefined) return '';
+  return String(value)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function bytesText(value) {
+  if (value === null || value === undefined) return '—';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let size = Number(value);
+  let index = 0;
+  while (size >= 1024 && index < units.length - 1) { size /= 1024; index += 1; }
+  return `${index === 0 ? Math.round(size) : size.toFixed(1)} ${units[index]}`;
+}
+
+/* "Today, 08:20" reads better than a timestamp when most of the list is
+   recent, and a date once it is not. */
+function whenText(iso) {
+  if (!iso) return '—';
+  const when = new Date(iso);
+  if (Number.isNaN(when.getTime())) return '—';
+
+  const now = new Date();
+  const time = when.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+
+  const sameDay = when.toDateString() === now.toDateString();
+  if (sameDay) return `${t('when.today', 'Today')}, ${time}`;
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (when.toDateString() === yesterday.toDateString()) return `${t('when.yesterday', 'Yesterday')}, ${time}`;
+
+  return when.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function initials(name) {
+  return String(name || '?').split(' ').filter(Boolean).slice(0, 2)
+    .map(part => part[0]).join('').toUpperCase();
+}
+
+const INFO_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><path d="M12 11v5.4M12 7.8h.01"/></svg>';
+const WARN_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 2.4 17.4A1.9 1.9 0 0 0 4 20.3h16a1.9 1.9 0 0 0 1.6-2.9L13.7 3.9a1.9 1.9 0 0 0-3.4 0Z"/><path d="M12 9.4v4.2M12 17.2h.01"/></svg>';
+const TICK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
+const CROSS_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+
+/* Why a figure is missing, said in the card where the figure would be. */
+function gapState(detail) {
+  return `<div class="gap">${INFO_ICON}<div>${esc(detail)}</div></div>`;
+}
 
 /* ==================================================================
    Navigation
@@ -301,8 +326,23 @@ function arcPath(cx, cy, r, startDeg, endDeg) {
 
 const GAUGE = { start: 135, sweep: 270, cx: 125, cy: 120, r: 86 };
 
+/* The needle sweeps to full and settles back on the reading, which is the
+   one bit of theatre here — the number it lands on is counted. */
 function drawGauge() {
-  const target = totals.flagRate;
+  const patients = state.overview && state.overview.patients;
+  const holder = document.getElementById('gauge');
+  const readout = document.getElementById('gaugeValue');
+  const caption = document.getElementById('gaugeCaption');
+
+  if (!patients || !patients.total) {
+    holder.innerHTML = gapState(t('gauge.none',
+      'Nothing to show yet. Upload a patient file and this fills in.'));
+    readout.textContent = '—';
+    caption.textContent = '';
+    return;
+  }
+
+  const target = Math.min(patients.awaiting_share / 100, 1);
   const { start, sweep, cx, cy, r } = GAUGE;
 
   let ticks = '';
@@ -313,8 +353,8 @@ function drawGauge() {
     ticks += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="currentColor" stroke-width="${i % 5 === 0 ? 2 : 1}" opacity="${i % 5 === 0 ? .38 : .2}" stroke-linecap="round"/>`;
   }
 
-  document.getElementById('gauge').innerHTML = `
-    <svg viewBox="0 0 250 178" style="width:100%;max-width:250px;color:var(--ink)" role="img" aria-label="Flag rate">
+  holder.innerHTML = `
+    <svg viewBox="0 0 250 178" style="width:100%;max-width:250px;color:var(--ink)" role="img" aria-label="Share of records awaiting confirmation">
       <path d="${arcPath(cx, cy, r, start, start + sweep)}" fill="none" stroke="var(--track)" stroke-width="14" stroke-linecap="round"/>
       <path id="gaugeArc" d="${arcPath(cx, cy, r, start, start + sweep)}" pathLength="1"
             fill="none" stroke="var(--green)" stroke-width="14" stroke-linecap="round" stroke-dasharray="0 1"/>
@@ -329,7 +369,6 @@ function drawGauge() {
 
   const arc = document.getElementById('gaugeArc');
   const needle = document.getElementById('gaugeNeedle');
-  const readout = document.getElementById('gaugeValue');
 
   function paint(fraction) {
     arc.setAttribute('stroke-dasharray', `${fraction.toFixed(4)} 1`);
@@ -337,8 +376,8 @@ function drawGauge() {
     readout.textContent = Math.round(fraction * 100) + '%';
   }
 
-  document.getElementById('gaugeCaption').textContent =
-    `${nf().format(totals.flagged)} ${t('gauge.of', 'of')} ${nf().format(Math.round(totals.flagged / totals.flagRate))} ${t('gauge.screened', 'screened')}`;
+  caption.textContent =
+    `${nf().format(patients.awaiting_confirmation)} ${t('gauge.of', 'of')} ${nf().format(patients.total)} ${t('gauge.records', 'records')}`;
 
   if (!shouldAnimate()) { paint(target); return; }
 
@@ -350,13 +389,32 @@ function drawGauge() {
   });
 }
 
+/* The line draws itself left to right as the page opens. */
 function drawLine() {
+  const daily = state.overview && state.overview.daily_files;
+  const holder = document.getElementById('lineChart');
+
+  if (!daily || !daily.available) {
+    holder.innerHTML = gapState((daily && daily.detail) ||
+      t('chart.noData', 'Nothing added yet. This fills in as files are read into the system.'));
+    return;
+  }
+
+  const series = daily.values;
+  const days = daily.days;
+
+  if (!series.some(value => value > 0)) {
+    holder.innerHTML = gapState(t('chart.quiet',
+      'No files added in the last fortnight. The line appears once there are.'));
+    return;
+  }
+
   const w = 640, h = 220, padX = 30, padY = 24;
-  const max = Math.max(...screenedSeries) * 1.14;
-  const stepX = (w - padX * 2) / (screenedSeries.length - 1);
+  const max = Math.max(...series) * 1.14 || 1;
+  const stepX = (w - padX * 2) / (series.length - 1);
   const y = v => h - padY - (v / max) * (h - padY * 2);
 
-  const points = screenedSeries.map((v, i) => [padX + i * stepX, y(v)]);
+  const points = series.map((v, i) => [padX + i * stepX, y(v)]);
   const line = points.map((p, i) => `${i ? 'L' : 'M'} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
   const area = `${line} L ${points[points.length - 1][0].toFixed(1)} ${h - padY} L ${padX} ${h - padY} Z`;
 
@@ -366,20 +424,20 @@ function drawLine() {
     grid += `<line x1="${padX}" y1="${gy}" x2="${w - padX}" y2="${gy}" stroke="var(--line)" stroke-width="1"/>`;
   }
 
-  const labels = screenedDays.map((d, i) =>
-    i % 2 === 0 ? `<text x="${(padX + i * stepX).toFixed(1)}" y="${h - 4}" font-size="10" fill="var(--muted)" text-anchor="middle">${d}</text>` : '').join('');
+  const labels = days.map((d, i) =>
+    i % 2 === 0 ? `<text x="${(padX + i * stepX).toFixed(1)}" y="${h - 4}" font-size="10" fill="var(--muted)" text-anchor="middle">${esc(d)}</text>` : '').join('');
 
   const last = points[points.length - 1];
 
-  document.getElementById('lineChart').innerHTML = `
-    <svg viewBox="0 0 ${w} ${h}" style="width:100%" role="img" aria-label="Prescriptions screened per day">
+  holder.innerHTML = `
+    <svg viewBox="0 0 ${w} ${h}" style="width:100%" role="img" aria-label="Files added per day">
       ${grid}
       <path id="lineArea" d="${area}" fill="var(--green)" opacity="0"/>
       <path id="lineStroke" d="${line}" pathLength="1" fill="none" stroke="var(--green)" stroke-width="2.5"
             stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="1 1" stroke-dashoffset="1"/>
       <g id="lineTip" opacity="0">
         <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="4.5" fill="var(--green)"/>
-        <text x="${(last[0] - 8).toFixed(1)}" y="${(last[1] - 12).toFixed(1)}" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="end">${screenedSeries[screenedSeries.length - 1]}</text>
+        <text x="${(last[0] - 8).toFixed(1)}" y="${(last[1] - 12).toFixed(1)}" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="end">${series[series.length - 1]}</text>
       </g>
       ${labels}
     </svg>`;
@@ -405,69 +463,63 @@ function drawLine() {
   });
 }
 
-/* A small line showing the direction of travel for one hotspot. */
-function sparkline(series, rising) {
-  const w = 74, h = 26, pad = 3;
-  const max = Math.max(...series), min = Math.min(...series);
-  const span = max - min || 1;
-  const stepX = (w - pad * 2) / (series.length - 1);
-  const path = series.map((v, i) =>
-    `${i ? 'L' : 'M'} ${(pad + i * stepX).toFixed(1)} ${(h - pad - ((v - min) / span) * (h - pad * 2)).toFixed(1)}`).join(' ');
+/* Bars rather than trend lines: there is no history to draw a trend from
+   yet, and a flat line pretending to be one would be worse than nothing. */
+function drawBars(holder, rows, totalForShare) {
+  const total = totalForShare || rows.reduce((sum, row) => sum + row.count, 0) || 1;
 
-  return `<svg class="spark" viewBox="0 0 ${w} ${h}" aria-hidden="true">
-      <path d="${path}" fill="none" stroke="${rising ? 'var(--danger)' : 'var(--green)'}" stroke-width="1.8"
-            stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>`;
-}
-
-function trendChip(change) {
-  const rising = change > 0;
-  const arrow = rising
-    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M6 11l6-6 6 6"/></svg>'
-    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M6 13l6 6 6-6"/></svg>';
-  return `<span class="trend ${rising ? 'up' : 'down'}">${arrow}${Math.abs(change)}%</span>`;
-}
-
-function drawDiseases() {
-  document.getElementById('diseaseList').innerHTML = diseaseHotspots.map(item => `
-    <div class="hotspot">
-      <div class="hotspot-name">
-        <strong>${item.name}</strong>
-        <span>${item.ward} · ${nf().format(item.count)} ${t('hot.cases', 'cases')}</span>
-      </div>
-      ${sparkline(item.series, item.change > 0)}
-      ${trendChip(item.change)}
-    </div>`).join('');
-}
-
-function drawInteractions() {
-  document.getElementById('interactionList').innerHTML = interactionHotspots.map(item => `
-    <div class="hotspot">
-      <div class="hotspot-name">
-        <strong>${item.pair}</strong>
-        <span><span class="tag ${item.severity}">${t('risk.' + item.severity, item.severity)}</span> · ${item.count} ${t('hot.flags', 'flags')}</span>
-      </div>
-      ${sparkline(item.series, item.change > 0)}
-      ${trendChip(item.change)}
-    </div>`).join('');
-}
-
-function drawWards() {
-  document.getElementById('wardList').innerHTML = wardLoad.map(row => `
-    <div class="bar-row">
-      <div class="bar-top"><span>${row.label}</span><span>${row.value}%</span></div>
-      <div class="bar-track"><div class="bar-fill" style="width:${shouldAnimate() ? 0 : row.value}%"></div></div>
-    </div>`).join('');
+  holder.innerHTML = rows.map(row => {
+    const share = Math.round((row.count / total) * 100);
+    return `
+      <div class="bar-row">
+        <div class="bar-top"><span>${esc(row.label)}</span><span>${nf().format(row.count)}</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${shouldAnimate() ? 0 : share}%"></div></div>
+      </div>`;
+  }).join('');
 
   if (!shouldAnimate()) return;
 
-  const fills = [...document.querySelectorAll('#wardList .bar-fill')];
+  const fills = [...holder.querySelectorAll('.bar-fill')];
   requestAnimationFrame(() => {
     fills.forEach((fill, index) => {
+      const share = Math.round((rows[index].count / total) * 100);
       fill.style.transitionDelay = `${index * 90}ms`;
-      fill.style.width = wardLoad[index].value + '%';
+      fill.style.width = share + '%';
     });
   });
+}
+
+function drawConditions() {
+  const card = state.overview && state.overview.conditions;
+  const holder = document.getElementById('diseaseList');
+
+  if (!card || !card.available) {
+    holder.innerHTML = gapState((card && card.detail) ||
+      t('hot.noConditions', 'No conditions recorded yet.'));
+    return;
+  }
+
+  drawBars(holder, card.results.map(row => ({ label: row.name, count: row.count })),
+    state.overview.patients.total);
+}
+
+function drawInteractions() {
+  const card = state.overview && state.overview.interactions;
+  const holder = document.getElementById('interactionList');
+  holder.innerHTML = gapState((card && card.detail) ||
+    t('hot.noInteractions', 'Interaction counts arrive once prescriptions are recorded.'));
+}
+
+function drawWards() {
+  const card = state.overview && state.overview.wards;
+  const holder = document.getElementById('wardList');
+
+  if (!card || !card.available) {
+    holder.innerHTML = gapState((card && card.detail) || t('hot.noWards', 'No wards recorded yet.'));
+    return;
+  }
+
+  drawBars(holder, card.results.map(row => ({ label: row.label, count: row.count })));
 }
 
 /* ==================================================================
@@ -479,94 +531,315 @@ const patientSearch = document.getElementById('patientSearch');
 const conditionFilter = document.getElementById('conditionFilter');
 const resultCount = document.getElementById('resultCount');
 
-// Build the condition filter from what is actually on file.
-const allConditions = [...new Set(patients.flatMap(p => p.conditions))].sort();
-conditionFilter.insertAdjacentHTML('beforeend',
-  allConditions.map(c => `<option value="${c}">${c}</option>`).join(''));
-
-function initials(name) {
-  return name.split(' ').filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase();
-}
-
-function riskTag(risk) {
-  if (risk === 'severe') return `<span class="tag severe">${t('risk.severe', 'Severe')}</span>`;
-  if (risk === 'moderate') return `<span class="tag moderate">${t('risk.moderate', 'Moderate')}</span>`;
-  return `<span class="tag grey">${t('risk.none', 'None')}</span>`;
+function statusTag(patient) {
+  return patient.needs_review
+    ? `<span class="tag review">${t('status.review', 'Not confirmed')}</span>`
+    : `<span class="tag green">${t('status.confirmed', 'Confirmed')}</span>`;
 }
 
 function renderPatients() {
-  const term = patientSearch.value.trim().toLowerCase();
-  const condition = conditionFilter.value;
+  if (state.loading) {
+    patientRows.innerHTML = `<tr><td colspan="6" class="empty">${t('loading', 'Loading…')}</td></tr>`;
+    resultCount.textContent = '';
+    return;
+  }
 
-  const shown = patients.filter(p =>
-    (!condition || p.conditions.includes(condition)) &&
-    (!term || p.name.toLowerCase().includes(term) || p.file.toLowerCase().includes(term)));
+  if (state.error) {
+    patientRows.innerHTML = `<tr><td colspan="6" class="empty">${esc(state.error)}</td></tr>`;
+    return;
+  }
 
-  patientRows.innerHTML = shown.length ? shown.map(p => `
+  patientRows.innerHTML = state.patients.length ? state.patients.map(p => `
     <tr>
       <td>
         <div class="who">
-          <span class="initials">${initials(p.name)}</span>
+          <span class="initials">${esc(initials(p.full_name))}</span>
           <div>
-            <strong>${p.name}</strong>
-            <span>${p.age} · ${p.sex} · ${p.ward}</span>
+            <strong>${esc(p.full_name)}</strong>
+            <span>${p.age !== null && p.age !== undefined ? esc(p.age) : '—'}${p.sex ? ' · ' + esc(p.sex) : ''}${p.ward ? ' · ' + esc(p.ward) : ''}</span>
           </div>
         </div>
       </td>
-      <td class="id">${p.file}</td>
-      <td><div class="chip-list" style="justify-content:flex-start">${p.conditions.map(c => `<span class="tag">${c}</span>`).join('')}</div></td>
-      <td>${riskTag(p.risk)}</td>
-      <td class="sub">${p.updated}</td>
+      <td class="id">${esc(p.file_number)}</td>
+      <td><div class="chip-list" style="justify-content:flex-start">${
+        (p.conditions.length ? p.conditions : ['—']).slice(0, 4).map(c => `<span class="tag">${esc(c)}</span>`).join('')
+      }</div></td>
+      <td>${statusTag(p)}</td>
+      <td class="sub">${esc(whenText(p.updated_at))}</td>
       <td>
         <div class="row-actions">
-          <button class="link-btn" data-file="${p.file}">${t('action.view', 'View')}</button>
+          <button class="link-btn" data-file="${esc(p.file_number)}">${t('action.view', 'View')}</button>
         </div>
       </td>
     </tr>`).join('')
-    : `<tr><td colspan="6" class="empty">${t('empty.patients', 'No patient file matches that search. Check the spelling or clear the filter.')}</td></tr>`;
+    : `<tr><td colspan="6" class="empty">${
+        state.total
+          ? t('empty.search', 'No patient file matches that search. Check the spelling or clear the filter.')
+          : t('empty.patients', 'No patient files yet. Upload one from the Files section and the details are read out of it.')
+      }</td></tr>`;
 
-  resultCount.textContent = `${nf().format(shown.length)} ${t('result.of', 'of')} ${nf().format(patients.length)} ${t('result.files', 'files')}`;
+  resultCount.textContent = state.total
+    ? `${nf().format(state.shown)} ${t('result.of', 'of')} ${nf().format(state.total)} ${t('result.files', 'files')}`
+    : '';
+}
+
+/* The search runs on the server, so a long patient list is not pulled into
+   the browser to be filtered there. Typing is debounced to one request. */
+let searchTimer;
+
+function scheduleSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(loadPatients, 220);
 }
 
 document.getElementById('searchForm').addEventListener('submit', event => {
   event.preventDefault();
-  renderPatients();
+  clearTimeout(searchTimer);
+  loadPatients();
 });
 
-conditionFilter.addEventListener('change', renderPatients);
-patientSearch.addEventListener('input', renderPatients);
+conditionFilter.addEventListener('change', loadPatients);
+patientSearch.addEventListener('input', scheduleSearch);
 
 document.getElementById('clearSearch').addEventListener('click', () => {
   patientSearch.value = '';
   conditionFilter.value = '';
-  renderPatients();
+  loadPatients();
   patientSearch.focus();
 });
 
-/* ---------- patient file ---------- */
+/* ==================================================================
+   One patient file
+
+   The record on the left, the document it was read from on the right. Admin
+   reads and downloads. The Edit button is not here because this account
+   cannot edit — and if the request were sent anyway, the server refuses it.
+   ================================================================== */
 
 const backdrop = document.getElementById('modalBackdrop');
-let openFile = null;
+let openPatientFile = null;
 
-function openPatient(fileNumber) {
-  const patient = patients.find(p => p.file === fileNumber);
-  if (!patient) return;
-  openFile = patient;
+function fieldRow(label, value, options = {}) {
+  const empty = value === null || value === undefined || value === '' ;
+  const shown = empty ? t('field.blank', 'Not recorded') : value;
+  const classes = ['field'];
+  if (options.wide) classes.push('wide');
+  if (options.stack) classes.push('stack');
 
-  document.getElementById('modalTitle').textContent = patient.name;
-  document.getElementById('modalSub').textContent = `${patient.file} · ${patient.ward}`;
+  return `
+    <div class="${classes.join(' ')}">
+      <span class="label">${esc(label)}</span>
+      <span class="value${empty ? ' empty' : ''}">${esc(shown)}</span>
+    </div>`;
+}
+
+function chipRow(label, values, kind) {
+  const list = (values || []).filter(Boolean);
+  if (!list.length) return fieldRow(label, '');
+
+  return `
+    <div class="field">
+      <span class="label">${esc(label)}</span>
+      <div class="chip-list">${list.map(v =>
+        `<span class="tag${kind === 'allergy' ? ' severe' : ''}">${esc(v)}</span>`).join('')}</div>
+    </div>`;
+}
+
+const OBSERVATIONS = [
+  ['bp', 'Blood pressure'], ['pulse', 'Pulse'], ['temperature', 'Temp °C'],
+  ['respiratory_rate', 'Resp rate'], ['spo2', 'SpO₂ %'], ['weight_kg', 'Weight kg'],
+  ['height_m', 'Height m'], ['pain_score', 'Pain']
+];
+
+function sectionBlock(number, title, inner) {
+  return `
+    <div class="section">
+      <div class="section-head">
+        <span class="section-no">${number}</span>
+        <h4>${esc(title)}</h4>
+      </div>
+      ${inner}
+    </div>`;
+}
+
+function recordHtml(patient) {
+  const encounter = patient.encounter || {};
+  const observations = patient.observations || {};
+
+  const identification = sectionBlock('01', t('sec.id', 'Patient identification'), `
+    <div class="field-grid">
+      ${fieldRow(t('f.name', 'Full name'), patient.full_name)}
+      ${fieldRow(t('f.fileNo', 'File number'), patient.file_number)}
+      ${fieldRow(t('f.idNo', 'ID number'), patient.id_number)}
+      ${fieldRow(t('f.dob', 'Date of birth'), patient.date_of_birth)}
+      ${fieldRow(t('f.age', 'Age'), patient.age)}
+      ${fieldRow(t('f.sex', 'Sex'), patient.sex_label || patient.sex)}
+      ${fieldRow(t('f.ward', 'Ward'), patient.ward)}
+      ${fieldRow(t('f.area', 'Home area'), patient.home_area)}
+      ${fieldRow(t('f.language', 'Language'), patient.language)}
+      ${fieldRow(t('f.phone', 'Phone'), patient.phone)}
+      ${fieldRow(t('f.email', 'Email'), patient.email)}
+      ${fieldRow(t('f.kin', 'Next of kin'), patient.next_of_kin)}
+      ${fieldRow(t('f.kinPhone', 'Their number'), patient.next_of_kin_phone)}
+      ${fieldRow(t('f.address', 'Address'), patient.address, { wide: true })}
+    </div>`);
+
+  const encounterBlock = sectionBlock('02', t('sec.encounter', 'Encounter and triage'), `
+    <div class="field-grid">
+      ${fieldRow(t('f.date', 'Date'), encounter.date)}
+      ${fieldRow(t('f.time', 'Time'), encounter.time)}
+      ${fieldRow(t('f.type', 'Type'), encounter.type)}
+      ${fieldRow(t('f.triage', 'Triage'), encounter.triage)}
+      ${fieldRow(t('f.referred', 'Referred by'), encounter.referred_by)}
+      ${fieldRow(t('f.complaint', 'Presenting complaint'), encounter.presenting_complaint, { wide: true, stack: true })}
+    </div>`);
+
+  const medication = (patient.medication || []).length
+    ? (patient.medication || []).map(item => `
+        <div class="med">
+          <strong>${esc(item.name)}</strong>
+          <span class="how">${esc([item.dose, item.frequency].filter(Boolean).join(' · ')) || t('f.noDose', 'no dose recorded')}</span>
+        </div>`).join('')
+    : `<p class="hint">${t('f.noMeds', 'No current medication recorded.')}</p>`;
+
+  const history = sectionBlock('03', t('sec.history', 'Medical history'), `
+    ${chipRow(t('f.conditions', 'Conditions'), patient.conditions)}
+    ${chipRow(t('f.allergies', 'Allergies'), patient.allergies, 'allergy')}
+    <p class="section-label" style="margin-top:16px">${t('f.meds', 'Current medication')}</p>
+    ${medication}
+    ${patient.history_notes ? `<div class="field stack" style="border-bottom:0">
+        <span class="label">${t('f.notes', 'Other history')}</span>
+        <span class="value">${esc(patient.history_notes)}</span>
+      </div>` : ''}`);
+
+  const obsBlock = sectionBlock('04', t('sec.obs', 'Observations'), `
+    <div class="obs-grid">
+      ${OBSERVATIONS.map(([key, label]) => {
+        const value = observations[key];
+        return `<div class="obs${value ? '' : ' empty'}">
+          <strong>${value ? esc(value) : '—'}</strong>
+          <span>${esc(t('obs.' + key, label))}</span>
+        </div>`;
+      }).join('')}
+    </div>`);
+
+  const assessment = sectionBlock('05', t('sec.assessment', 'Clinical assessment'),
+    `<div class="field stack" style="border-bottom:0">
+      <span class="value${patient.assessment ? '' : ' empty'}">${esc(patient.assessment || t('field.blank', 'Not recorded'))}</span>
+    </div>`);
+
+  const plan = sectionBlock('06', t('sec.plan', 'Plan and follow-up'),
+    `<div class="field stack" style="border-bottom:0">
+      <span class="value${patient.plan ? '' : ' empty'}">${esc(patient.plan || t('field.blank', 'Not recorded'))}</span>
+    </div>`);
+
+  return identification + encounterBlock + history + obsBlock + assessment + plan;
+}
+
+function originalHtml(patient) {
+  const documents = patient.documents || [];
+
+  if (!documents.length) {
+    return sectionBlock('—', t('sec.original', 'Original document'),
+      gapState(t('f.noDoc', 'No document is attached to this record. It was entered by hand.')));
+  }
+
+  const first = documents.find(d => d.download_url) || documents[0];
+  const viewable = first.download_url && first.name.toLowerCase().endsWith('.pdf');
+
+  const list = documents.map(doc => `
+    <div class="doc-row">
+      <span class="file-icon">${esc(doc.kind)}</span>
+      <div class="doc-name">
+        <strong>${esc(doc.name)}</strong>
+        <span>${esc(bytesText(doc.size_bytes))}${doc.pages ? ' · ' + doc.pages + ' ' + t('f.pages', 'pages') : ''} · ${esc(whenText(doc.uploaded_at))}</span>
+      </div>
+      ${doc.download_url
+        ? `<button class="link-btn" data-download="${doc.id}">${t('action.retrieve', 'Download')}</button>`
+        : `<span class="tag grey">${esc(doc.stage_label)}</span>`}
+    </div>`).join('');
+
+  const frame = viewable
+    ? `<iframe class="pdf-frame" src="${esc(first.download_url)}?inline=1"
+               title="${esc(first.name)}" loading="lazy"></iframe>
+       <p class="pdf-note">${
+         first.read_as_image
+           ? t('f.wasImage', 'This page had no text layer, so it was read as a picture. Worth checking against the record.')
+           : t('f.wasText', 'The record on the left was read from this document.')
+       }</p>`
+    : '';
+
+  return sectionBlock('—', t('sec.original', 'Original document'), list + frame);
+}
+
+function historyHtml(patient) {
+  const versions = patient.versions || [];
+
+  if (!versions.length) {
+    return sectionBlock('—', t('sec.history2', 'Edit history'),
+      gapState(t('f.noEdits', 'Nothing has been changed since this record was created.')));
+  }
+
+  return sectionBlock('—', t('sec.history2', 'Edit history'), versions.map(version => `
+    <div class="history-row">
+      <span class="when">${esc(whenText(version.at))}</span>
+      <span class="what">
+        <strong>${esc(version.by)}</strong> ${t('f.changed', 'changed')} ${esc(version.fields.join(', ') || '—')}
+        ${version.note ? `<span>${esc(version.note)}</span>` : ''}
+      </span>
+    </div>`).join(''));
+}
+
+async function openPatient(fileNumber) {
+  document.getElementById('modalTitle').textContent = t('loading', 'Loading…');
+  document.getElementById('modalSub').textContent = fileNumber;
+  document.getElementById('modalBody').innerHTML = '';
+  document.getElementById('sheetTools').innerHTML = '';
+  document.getElementById('sheetFoot').textContent = '';
+  backdrop.classList.add('open');
+
+  let data;
+  try {
+    data = await callApi(API.patients + encodeURIComponent(fileNumber) + '/');
+  } catch (error) {
+    document.getElementById('modalTitle').textContent = t('f.notFound', 'File not found');
+    document.getElementById('modalBody').innerHTML = gapState(error.message);
+    return;
+  }
+
+  const patient = data.patient;
+  openPatientFile = patient;
+  state.can = data.can;
+
+  document.getElementById('modalTitle').textContent = patient.full_name;
+  document.getElementById('modalSub').textContent =
+    [patient.file_number, patient.ward, patient.age !== null ? `${patient.age} ${t('f.years', 'years')}` : '']
+      .filter(Boolean).join(' · ');
+
+  const firstDoc = (patient.documents || []).find(d => d.download_url);
+
+  document.getElementById('sheetTools').innerHTML = `
+    ${patient.needs_review ? `<span class="tag review">${t('status.review', 'Not confirmed')}</span>` : ''}
+    ${firstDoc ? `<button class="btn ghost" type="button" data-download="${firstDoc.id}">${t('action.retrieve', 'Download original')}</button>` : ''}`;
 
   document.getElementById('modalBody').innerHTML = `
-    <div class="detail-row"><span>${t('detail.age', 'Age and sex')}</span><strong>${patient.age} · ${patient.sex}</strong></div>
-    <div class="detail-row"><span>${t('detail.conditions', 'Conditions')}</span>
-      <div class="chip-list">${patient.conditions.map(c => `<span class="tag">${c}</span>`).join('')}</div></div>
-    <div class="detail-row"><span>${t('detail.meds', 'Current medication')}</span>
-      <div class="chip-list">${patient.meds.map(m => `<span class="tag">${m}</span>`).join('')}</div></div>
-    <div class="detail-row"><span>${t('detail.allergies', 'Allergies')}</span><strong>${patient.allergies}</strong></div>
-    <div class="detail-row"><span>${t('table.risk', 'Interaction risk')}</span><strong>${riskTag(patient.risk)}</strong></div>
-    <div class="detail-row"><span>${t('table.updated', 'Last updated')}</span><strong>${patient.updated}</strong></div>`;
+    ${patient.needs_review ? `
+      <div class="flagged">
+        ${WARN_ICON}
+        <div>
+          <strong>${t('f.reviewTitle', 'Not yet confirmed by a doctor')}</strong>
+          ${t('f.reviewBody', 'These details were read out of the uploaded document and have not been checked against it. A doctor confirms the record; this workspace cannot.')}
+        </div>
+      </div>` : ''}
 
-  backdrop.classList.add('open');
+    <div class="sheet-cols">
+      <div>${recordHtml(patient)}</div>
+      <div class="original">${originalHtml(patient)}${historyHtml(patient)}</div>
+    </div>`;
+
+  document.getElementById('sheetFoot').textContent = patient.confirmed_at
+    ? `${t('f.confirmedBy', 'Confirmed by')} ${patient.confirmed_by || '—'} · ${whenText(patient.confirmed_at)}`
+    : `${t('f.created', 'Created')} ${whenText(patient.created_at)}${patient.created_by ? ' · ' + patient.created_by : ''}`;
 }
 
 patientRows.addEventListener('click', event => {
@@ -574,7 +847,18 @@ patientRows.addEventListener('click', event => {
   if (button) openPatient(button.dataset.file);
 });
 
-function closeModal() { backdrop.classList.remove('open'); openFile = null; }
+/* Downloading goes through Django, which checks the session before handing
+   over a single byte. The storage URL never reaches the browser. */
+function downloadDocument(id) {
+  window.open(`${API.files}${id}/download/`, '_blank', 'noopener');
+}
+
+document.addEventListener('click', event => {
+  const button = event.target.closest('button[data-download]');
+  if (button) downloadDocument(button.dataset.download);
+});
+
+function closeModal() { backdrop.classList.remove('open'); openPatientFile = null; }
 
 document.getElementById('closeModal').addEventListener('click', closeModal);
 backdrop.addEventListener('click', event => { if (event.target === backdrop) closeModal(); });
@@ -585,38 +869,297 @@ document.addEventListener('keydown', event => {
   closeDrawer();
 });
 
-document.getElementById('retrieveFile').addEventListener('click', () => {
-  if (!openFile) return;
-  // → GET /api/files/<file>/download/
-  toast(`${t('toast.retrieving', 'Retrieving')} ${openFile.file}`);
-  closeModal();
+/* ==================================================================
+   Files on the system
+   ================================================================== */
+
+function drawFiles() {
+  const holder = document.getElementById('fileList');
+
+  if (state.loading) {
+    holder.innerHTML = `<p class="hint">${t('loading', 'Loading…')}</p>`;
+    return;
+  }
+
+  if (!state.files.length) {
+    holder.innerHTML = gapState(t('files.none',
+      'Nothing uploaded yet. The files you add appear here with the record each one produced.'));
+    return;
+  }
+
+  holder.innerHTML = state.files.map(file => `
+    <div class="doc-row">
+      <span class="file-icon">${esc(file.kind)}</span>
+      <div class="doc-name">
+        <strong>${esc(file.name)}</strong>
+        <span>${esc(bytesText(file.size_bytes))} · ${esc(whenText(file.uploaded_at))}${
+          file.patient_name ? ' · ' + esc(file.patient_name) : ''
+        }</span>
+      </div>
+      ${file.stage === 'failed'
+        ? `<span class="tag severe" title="${esc(file.detail)}">${t('stage.failed', 'Not read')}</span>`
+        : ''}
+      ${file.stage === 'held'
+        ? `<span class="tag warn" title="${esc(file.detail)}">${t('stage.heldTag', 'Held')}</span>`
+        : ''}
+      ${file.file_number
+        ? `<button class="link-btn" data-file="${esc(file.file_number)}">${t('action.view', 'View')}</button>`
+        : ''}
+      ${file.download_url
+        ? `<button class="link-btn" data-download="${file.id}">${t('action.retrieve', 'Download')}</button>`
+        : ''}
+    </div>`).join('');
+}
+
+document.getElementById('fileList').addEventListener('click', event => {
+  const view = event.target.closest('button[data-file]');
+  if (view) openPatient(view.dataset.file);
 });
 
 /* ==================================================================
-   Files
+   Uploading, one real stage at a time
+
+   Four steps, each marked done only when the server says that step finished.
+   The first shows real byte progress; the others show what the server reported
+   — how much text came off the page, what the record ended up being called.
    ================================================================== */
 
 const dropzone = document.getElementById('dropzone');
 const fileInput = document.getElementById('fileInput');
 const uploadList = document.getElementById('uploadList');
 
-function drawFiles() {
-  document.getElementById('fileList').innerHTML = systemFiles.map(file => `
-    <div class="file-row">
-      <span class="file-icon">${file.kind}</span>
-      <div class="file-name">
-        <strong>${file.name}</strong>
-        <span>${file.size} · ${file.when}</span>
+const MAX_BYTES = 20 * 1024 * 1024;
+
+const STAGES = [
+  ['store', 'stage.store', 'Storing the file'],
+  ['read', 'stage.read', 'Reading the pages'],
+  ['extract', 'stage.extract', 'Pulling out the details'],
+  ['record', 'stage.record', 'Record ready']
+];
+
+function uploadCard(file) {
+  const card = document.createElement('div');
+  card.className = 'upload-card';
+  card.innerHTML = `
+    <div class="upload-top">
+      <span class="file-icon">${esc((file.name.split('.').pop() || '?').slice(0, 4).toUpperCase())}</span>
+      <div class="upload-name">
+        <strong>${esc(file.name)}</strong>
+        <span>${esc(bytesText(file.size))}</span>
       </div>
-      <button class="link-btn" data-download="${file.name}">${t('action.retrieve', 'Retrieve')}</button>
-    </div>`).join('');
+    </div>
+    <div class="stages">
+      ${STAGES.map(([key, token, fallback]) => `
+        <div class="stage" data-stage="${key}">
+          <span class="stage-dot">${TICK_ICON}</span>
+          <div class="stage-copy">
+            <strong>${esc(t(token, fallback))}</strong>
+            <span></span>
+            ${key === 'store' ? '<div class="stage-bar" hidden><i></i></div>' : ''}
+          </div>
+        </div>`).join('')}
+    </div>
+    <div class="upload-done" hidden></div>`;
+
+  uploadList.prepend(card);
+  return card;
 }
 
-document.getElementById('fileList').addEventListener('click', event => {
-  const button = event.target.closest('button[data-download]');
-  // → GET /api/files/<name>/download/
-  if (button) toast(`${t('toast.retrieving', 'Retrieving')} ${button.dataset.download}`);
+function setStage(card, key, status, detail) {
+  const row = card.querySelector(`.stage[data-stage="${key}"]`);
+  if (!row) return;
+
+  row.classList.remove('waiting', 'working', 'done', 'failed');
+  row.classList.add(status);
+
+  if (status === 'failed') row.querySelector('.stage-dot').innerHTML = CROSS_ICON;
+  if (detail !== undefined) row.querySelector('.stage-copy span').textContent = detail || '';
+}
+
+/* fetch() cannot report how much of a body has gone up, so the first step
+   uses XMLHttpRequest and the bar follows the real byte count. */
+function postFile(file, onProgress) {
+  return new Promise((resolve, reject) => {
+    const form = new FormData();
+    form.append('file', file);
+
+    const request = new XMLHttpRequest();
+    request.open('POST', API.upload);
+    request.setRequestHeader('X-CSRFToken', getCookie('csrftoken') || '');
+    request.withCredentials = true;
+
+    request.upload.addEventListener('progress', event => {
+      if (event.lengthComputable) onProgress(event.loaded / event.total);
+    });
+
+    request.addEventListener('load', () => {
+      let data = {};
+      try { data = JSON.parse(request.responseText); } catch (error) { /* handled below */ }
+
+      if (request.status === 401) { window.location.href = LOGIN_URL; reject(new Error('signed out')); return; }
+      if (request.status >= 200 && request.status < 300) resolve(data);
+      else reject(new Error(data.detail || `The upload failed (${request.status}).`));
+    });
+
+    request.addEventListener('error', () => reject(new Error('The upload could not reach the server.')));
+    request.addEventListener('abort', () => reject(new Error('The upload was cancelled.')));
+
+    request.send(form);
+  });
+}
+
+async function uploadOne(file) {
+  const card = uploadCard(file);
+  STAGES.forEach(([key]) => setStage(card, key, 'waiting'));
+
+  const bar = card.querySelector('.stage-bar');
+  const barFill = card.querySelector('.stage-bar i');
+  const finish = card.querySelector('.upload-done');
+
+  function fail(key, message) {
+    setStage(card, key, 'failed', message);
+    finish.hidden = false;
+    finish.innerHTML = `<span class="ready">${esc(message)}</span>`;
+  }
+
+  // ---- 1. store it
+  setStage(card, 'store', 'working', t('stage.storing', 'Sending it to storage…'));
+  bar.hidden = false;
+
+  let stored;
+  try {
+    stored = await postFile(file, fraction => { barFill.style.width = (fraction * 100).toFixed(1) + '%'; });
+  } catch (error) {
+    bar.hidden = true;
+    fail('store', error.message);
+    return;
+  }
+
+  barFill.style.width = '100%';
+  setStage(card, 'store', 'done', `${bytesText(stored.file.size_bytes)} ${t('stage.stored', 'stored')}`);
+
+  const fileId = stored.file.id;
+  loadFiles();
+
+  // A CSV is kept but there is no patient record to make from it, so the
+  // remaining steps are removed rather than shown as skipped.
+  if (!stored.next) {
+    ['read', 'extract', 'record'].forEach(key => {
+      const row = card.querySelector(`.stage[data-stage="${key}"]`);
+      if (row) row.remove();
+    });
+    finish.hidden = false;
+    finish.innerHTML = `<span class="ready">${t('stage.notRead',
+      'Stored. A spreadsheet is kept as a file but not read into a patient record.')}</span>`;
+    return;
+  }
+
+  // ---- 2. read the pages
+  setStage(card, 'read', 'working', t('stage.readingNow', 'Looking for the text on the page…'));
+
+  let read;
+  try {
+    read = await callApi(`${API.files}${fileId}/read/`, { method: 'POST' });
+  } catch (error) {
+    fail('read', error.message);
+    return;
+  }
+
+  setStage(card, 'read', 'done', read.detail);
+
+  // ---- 3. pull out the details
+  setStage(card, 'extract', 'working', read.file.read_as_image
+    ? t('stage.extractingImage', 'Reading the page as a picture. This one takes longer…')
+    : t('stage.extractingText', 'Finding the name, conditions, medication and allergies…'));
+
+  let result;
+  try {
+    result = await callApi(`${API.files}${fileId}/extract/`, { method: 'POST' });
+  } catch (error) {
+    // A clash is not a failure to read — the page was read fine, it just
+    // belongs to somebody already on the system. Say which record, and offer
+    // to open it, rather than leaving the person to go looking.
+    const clash = error.status === 409 && error.data && error.data.conflict;
+
+    if (clash) {
+      setStage(card, 'extract', 'done', t('stage.readOk', 'Read without trouble.'));
+      setStage(card, 'record', 'failed', t('stage.held', 'Held — it clashes with a record already on the system'));
+
+      finish.hidden = false;
+      finish.innerHTML = `
+        <span class="ready">
+          <strong>${t('stage.heldTitle', 'Nothing was created or changed.')}</strong>
+          <span style="display:block;margin-top:4px">${esc(error.message)}</span>
+        </span>
+        <button class="btn ghost" type="button" data-file="${esc(clash.file_number)}">${
+          t('stage.openExisting', 'Open that record')}</button>`;
+    } else {
+      fail('extract', error.message);
+    }
+
+    loadFiles();
+    return;
+  }
+
+  const gaps = result.gaps || [];
+  setStage(card, 'extract', 'done', gaps.length
+    ? `${t('stage.gaps', 'Read, but the page did not state:')} ${gaps.join(', ')}`
+    : t('stage.gotAll', 'Every section found.'));
+
+  // ---- 4. the record
+  const patient = result.patient;
+  setStage(card, 'record', 'done',
+    `${patient.file_number} · ${patient.conditions.length} ${t('stage.conditions', 'conditions')}, ` +
+    `${patient.medication.length} ${t('stage.medicines', 'medicines')}, ` +
+    `${patient.allergies.length} ${t('stage.allergies', 'allergies')}`);
+
+  finish.hidden = false;
+  finish.innerHTML = `
+    <span class="ready">
+      <strong>${esc(patient.full_name)}</strong> —
+      ${result.created
+        ? t('stage.created', 'new record created')
+        : result.matched_on === 'id_number'
+          ? t('stage.mergedById', 'recognised by ID number and added to the record already on file')
+          : t('stage.merged', 'added to the record already on file')}.
+      ${patient.needs_review ? t('stage.needsDoctor', 'A doctor confirms it before it counts as checked.') : ''}
+      ${result.note ? `<span style="display:block;margin-top:4px;color:var(--muted)">${esc(result.note)}</span>` : ''}
+    </span>
+    <button class="btn ghost" type="button" data-file="${esc(patient.file_number)}">${t('action.view', 'View')}</button>`;
+
+  loadAll();
+}
+
+uploadList.addEventListener('click', event => {
+  const button = event.target.closest('button[data-file]');
+  if (button) openPatient(button.dataset.file);
 });
+
+function handleFiles(fileList) {
+  if (!state.can.upload) {
+    toast(t('error.noUpload', 'This account cannot upload patient files.'));
+    return;
+  }
+
+  // One at a time, in order. Each file makes three requests, and firing a
+  // dozen at once would only make them all slower.
+  const queue = [...fileList].filter(file => {
+    if (file.size > MAX_BYTES) {
+      toast(`${file.name} ${t('error.tooBig', 'is over the 20 MB limit')}`);
+      return false;
+    }
+    if (file.size === 0) {
+      toast(`${file.name} ${t('error.empty', 'is empty')}`);
+      return false;
+    }
+    return true;
+  });
+
+  queue.reduce(
+    (chain, file) => chain.then(() => uploadOne(file).catch(() => {})),
+    Promise.resolve()
+  );
+}
 
 dropzone.addEventListener('click', () => fileInput.click());
 dropzone.addEventListener('keydown', event => {
@@ -632,60 +1175,12 @@ dropzone.addEventListener('keydown', event => {
 dropzone.addEventListener('drop', event => handleFiles(event.dataTransfer.files));
 fileInput.addEventListener('change', () => { handleFiles(fileInput.files); fileInput.value = ''; });
 
-const MAX_BYTES = 20 * 1024 * 1024;
-
-function readableSize(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-}
-
-function handleFiles(fileList) {
-  [...fileList].forEach(file => {
-    if (file.size > MAX_BYTES) {
-      toast(`${file.name} ${t('error.tooBig', 'is over the 20 MB limit')}`);
-      return;
-    }
-
-    const row = document.createElement('div');
-    row.className = 'file-row';
-    row.innerHTML = `
-      <span class="file-icon">${(file.name.split('.').pop() || '?').slice(0, 4).toUpperCase()}</span>
-      <div class="file-name">
-        <strong>${file.name}</strong>
-        <span>${readableSize(file.size)} · ${t('files.uploading', 'uploading…')}</span>
-        <div class="progress"><i></i></div>
-      </div>`;
-    uploadList.prepend(row);
-
-    // Stands in for the real upload. → POST /api/files/ with FormData.
-    const bar = row.querySelector('.progress i');
-    const status = row.querySelector('.file-name span');
-    let percent = 0;
-
-    const timer = setInterval(() => {
-      percent = Math.min(percent + 8 + Math.random() * 14, 100);
-      bar.style.width = percent + '%';
-
-      if (percent === 100) {
-        clearInterval(timer);
-        status.textContent = `${readableSize(file.size)} · ${t('files.done', 'uploaded')}`;
-        row.querySelector('.progress').remove();
-
-        systemFiles.unshift({
-          name: file.name,
-          size: readableSize(file.size),
-          when: t('when.now', 'Just now'),
-          kind: (file.name.split('.').pop() || '?').slice(0, 4).toUpperCase()
-        });
-        drawFiles();
-      }
-    }, 180);
-  });
-}
-
 /* ==================================================================
-   Satellite map of case hotspots
+   Satellite map of where patients come from
+
+   The circles are drawn from the home area on each record, which is a suburb
+   and never a street. A suburb the backend has no coordinates for is listed
+   under the map rather than guessed onto it.
 
    The key below is visible to anyone who opens this page — that is how the
    Maps JavaScript API works. Restrict it in the Google Cloud console to this
@@ -693,17 +1188,12 @@ function handleFiles(fileList) {
    ================================================================== */
 
 const MAPS_KEY = 'AIzaSyD6xtbTLrG1jKICo1tZhl10dL1S-rgEGH8';
-const HOSPITAL = { lat: -25.6154, lng: 27.9930 };  // Dr George Mukhari, Ga-Rankuwa
 
 const mapCondition = document.getElementById('mapCondition');
 let map = null;
 let circles = [];
 let infoWindow = null;
-
-// Fill the filter from the areas actually on file.
-[...new Set(caseAreas.map(a => a.condition))].sort().forEach(condition => {
-  mapCondition.insertAdjacentHTML('beforeend', `<option value="${condition}">${condition}</option>`);
-});
+let mapReady = false;
 
 function loadMaps() {
   return new Promise((resolve, reject) => {
@@ -722,34 +1212,38 @@ function loadMaps() {
 }
 
 function drawCircles() {
+  if (!mapReady) return;
+
   circles.forEach(circle => circle.setMap(null));
   circles = [];
 
+  const card = state.overview && state.overview.map;
+  if (!card) return;
+
   const condition = mapCondition.value;
-  const shown = caseAreas.filter(a => !condition || a.condition === condition);
+  const shown = (card.areas || []).filter(area => !condition || area.condition === condition);
+  const biggest = Math.max(...shown.map(area => area.cases), 1);
 
   shown.forEach(area => {
-    const rising = area.change > 0;
-
     // Radius grows with the square root of the count, so a hotspot four times
     // the size draws twice as wide rather than four times.
     const circle = new google.maps.Circle({
       map,
       center: { lat: area.lat, lng: area.lng },
-      radius: Math.sqrt(area.cases) * 190,
-      strokeColor: rising ? '#d94436' : '#8fbf9f',
+      radius: Math.sqrt(area.cases) * 420,
+      strokeColor: '#1d6b4f',
       strokeOpacity: .9,
       strokeWeight: 1.5,
-      fillColor: rising ? '#d94436' : '#8fbf9f',
-      fillOpacity: .3
+      fillColor: '#1d6b4f',
+      fillOpacity: Math.min(.18 + (area.cases / biggest) * .32, .5)
     });
 
     circle.addListener('click', () => {
       infoWindow.setContent(`
         <div class="map-info">
-          <strong>${area.area}</strong>
-          <span>${area.condition}</span>
-          <span>${nf().format(area.cases)} ${t('hot.cases', 'cases')} \u00b7 ${rising ? '+' : ''}${area.change}%</span>
+          <strong>${esc(area.area)}</strong>
+          <span>${nf().format(area.cases)} ${area.cases === 1 ? t('map.patient', 'patient') : t('map.patients', 'patients')}</span>
+          ${area.condition ? `<span>${t('map.mostly', 'Mostly')} ${esc(area.condition)}</span>` : ''}
         </div>`);
       infoWindow.setPosition({ lat: area.lat, lng: area.lng });
       infoWindow.open(map);
@@ -759,41 +1253,132 @@ function drawCircles() {
   });
 }
 
+function fillMapFilter() {
+  const card = state.overview && state.overview.map;
+  if (!card) return;
+
+  const conditions = [...new Set((card.areas || []).map(a => a.condition).filter(Boolean))].sort();
+  const current = mapCondition.value;
+
+  mapCondition.innerHTML = `<option value="">${t('map.all', 'All conditions')}</option>` +
+    conditions.map(c => `<option value="${esc(c)}"${c === current ? ' selected' : ''}>${esc(c)}</option>`).join('');
+}
+
+function mapNote() {
+  const card = state.overview && state.overview.map;
+  const note = document.querySelector('.map-legend .map-note');
+  if (!note || !card) return;
+
+  const unplaced = card.unplaced || [];
+  note.textContent = unplaced.length
+    ? `${t('map.unplaced', 'Not on the map:')} ${unplaced.map(a => `${a.area} (${a.cases})`).join(', ')}`
+    : t('map.note', 'Circle size shows how many patients');
+}
+
 async function initMap() {
   const target = document.getElementById('map');
+  const card = state.overview && state.overview.map;
 
-  try {
-    await loadMaps();
-  } catch (error) {
-    target.innerHTML = `<div class="map-fallback">${t('map.offline', 'The map could not load. Check the connection and the API key.')}</div>`;
+  if (!card || !card.available) {
+    target.innerHTML = `<div class="map-fallback">${esc((card && card.detail) ||
+      t('map.none', 'No home areas recorded yet. They appear here as patient files are read in.'))}</div>`;
     return;
   }
 
-  map = new google.maps.Map(target, {
-    center: HOSPITAL,
-    zoom: 11,
-    mapTypeId: 'satellite',
-    tilt: 0,
-    streetViewControl: false,
-    fullscreenControl: true,
-    mapTypeControl: true,
-    mapTypeControlOptions: { mapTypeIds: ['satellite', 'hybrid', 'roadmap'] }
-  });
+  if (!mapReady) {
+    try {
+      await loadMaps();
+    } catch (error) {
+      target.innerHTML = `<div class="map-fallback">${t('map.offline',
+        'The map could not load. Check the connection and the API key.')}</div>`;
+      return;
+    }
 
-  infoWindow = new google.maps.InfoWindow();
+    map = new google.maps.Map(target, {
+      center: { lat: card.hospital.lat, lng: card.hospital.lng },
+      zoom: 11,
+      mapTypeId: 'satellite',
+      tilt: 0,
+      streetViewControl: false,
+      fullscreenControl: true,
+      mapTypeControl: true,
+      mapTypeControlOptions: { mapTypeIds: ['satellite', 'hybrid', 'roadmap'] }
+    });
 
-  new google.maps.Marker({
-    map,
-    position: HOSPITAL,
-    title: 'Dr George Mukhari Academic Hospital'
-  });
+    infoWindow = new google.maps.InfoWindow();
+
+    new google.maps.Marker({
+      map,
+      position: { lat: card.hospital.lat, lng: card.hospital.lng },
+      title: card.hospital.name
+    });
+
+    mapReady = true;
+  }
 
   drawCircles();
 }
 
-mapCondition.addEventListener('change', () => { if (map) drawCircles(); });
+mapCondition.addEventListener('change', drawCircles);
 
-initMap();
+/* ==================================================================
+   Loading
+   ================================================================== */
+
+async function loadOverview() {
+  try {
+    state.overview = await callApi(API.overview);
+  } catch (error) {
+    state.overview = null;
+    state.error = error.message;
+  }
+}
+
+async function loadPatients() {
+  const params = new URLSearchParams();
+  if (patientSearch.value.trim()) params.set('q', patientSearch.value.trim());
+  if (conditionFilter.value) params.set('condition', conditionFilter.value);
+
+  try {
+    const data = await callApi(`${API.patients}?${params}`);
+    state.patients = data.results;
+    state.total = data.total;
+    state.shown = data.shown;
+    state.can = data.can;
+    state.error = '';
+
+    // The filter is built from the conditions actually on file, so it never
+    // offers something that would return nothing.
+    const current = conditionFilter.value;
+    conditionFilter.innerHTML =
+      `<option value="">${t('patients.allConditions', 'All conditions')}</option>` +
+      data.conditions.map(c => `<option value="${esc(c)}"${c === current ? ' selected' : ''}>${esc(c)}</option>`).join('');
+  } catch (error) {
+    state.patients = [];
+    state.error = error.message;
+  }
+
+  state.loading = false;
+  renderPatients();
+}
+
+async function loadFiles() {
+  try {
+    const data = await callApi(API.files);
+    state.files = data.results;
+    state.can = data.can;
+  } catch (error) {
+    state.files = [];
+  }
+  drawFiles();
+}
+
+async function loadAll() {
+  await Promise.all([loadOverview(), loadPatients(), loadFiles()]);
+  state.loading = false;
+  render();
+  initMap();
+}
 
 /* ==================================================================
    Settings
@@ -826,11 +1411,9 @@ document.getElementById('saveSettings').addEventListener('click', () => toast(t(
 
 document.getElementById('signOut').addEventListener('click', async () => {
   try {
-    await fetch(API.logout, {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'X-CSRFToken': getCookie('csrftoken') || '' }
-    });
+    await callApi(API.logout, { method: 'POST' });
+  } catch (error) {
+    /* signing out locally matters more than the server's answer */
   } finally {
     window.location.href = LOGIN_URL;
   }
@@ -853,25 +1436,52 @@ function toast(message) {
    Render
    ================================================================== */
 
+function statNumber(id, value, note) {
+  document.getElementById(id).textContent = value === null || value === undefined ? '—' : nf().format(value);
+  const delta = document.getElementById(id + 'Delta');
+  if (delta) delta.textContent = note || '';
+}
+
 function render() {
-  document.getElementById('statFiles').textContent = nf().format(totals.files);
-  document.getElementById('statFilesDelta').textContent = t('delta.total', 'on the system');
-  document.getElementById('statUploads').textContent = nf().format(totals.uploadsThisWeek);
-  document.getElementById('statUploadsDelta').textContent = t('delta.week', 'in the last 7 days');
-  document.getElementById('statFlagged').textContent = nf().format(totals.flagged);
-  document.getElementById('statFlaggedDelta').textContent = t('delta.month', 'this month');
-  document.getElementById('statSevere').textContent = nf().format(totals.severe);
-  document.getElementById('statSevereDelta').textContent = t('delta.review', 'needing review');
+  const overview = state.overview;
+  const patients = overview && overview.patients;
+  const files = overview && overview.files;
+
+  statNumber('statFiles', patients ? patients.total : null, t('delta.total', 'on the system'));
+  statNumber('statUploads', files ? files.this_week : null, t('delta.week', 'in the last 7 days'));
+  statNumber('statAwaiting', patients ? patients.awaiting_confirmation : null,
+    t('delta.doctor', 'waiting on a doctor'));
+  statNumber('statDocs', files ? files.total : null,
+    files && files.failed ? `${nf().format(files.failed)} ${t('delta.failed', 'could not be read')}` : t('delta.stored', 'kept as uploaded'));
 
   drawGauge();
   drawLine();
-  drawDiseases();
+  drawConditions();
   drawInteractions();
   drawWards();
   drawFiles();
   renderPatients();
+  fillMapFilter();
+  mapNote();
 
   chartsAnimated = true;
 }
 
-render();
+/* ==================================================================
+   Boot
+   ================================================================== */
+
+(async function start() {
+  const me = await requireSession();
+  if (!me) return;
+
+  render();
+  await loadAll();
+
+  // The overview is a shared view of a system other people are using, so it
+  // refreshes itself — but not while nobody is looking at the tab.
+  setInterval(() => {
+    if (document.hidden) return;
+    loadOverview().then(render);
+  }, 60000);
+})();
