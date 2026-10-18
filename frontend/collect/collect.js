@@ -29,6 +29,8 @@ let state = null;
 let polling = null;
 let stream = null;
 let scanning = false;
+let framesSeen = 0;
+let stallTimer;
 
 /* ------------------------------------------------------------------ */
 
@@ -261,10 +263,30 @@ async function openCamera() {
   }
 
   scanHint.textContent = 'Looking for a code…';
+  framesSeen = 0;
+
+  /* A camera that is permitted but delivers nothing looks identical to a
+     camera that simply cannot see the code: frame up, line sweeping, nothing
+     happening. After a few seconds of no frames at all, say what the phone is
+     actually reporting, so the problem can be read off the screen instead of
+     guessed at. */
+  clearTimeout(stallTimer);
+  stallTimer = setTimeout(() => {
+    if (!scanning || framesSeen) return;
+
+    const track = stream && stream.getVideoTracks()[0];
+    scanHint.textContent =
+      `No picture yet — ${track ? track.readyState : 'no track'}` +
+      `${track && track.muted ? ', muted' : ''}` +
+      `, ready ${video.readyState}, ${video.videoWidth}×${video.videoHeight}` +
+      `${video.paused ? ', paused' : ''}. Read your code out instead.`;
+  }, 3500);
+
   requestAnimationFrame(readFrame);
 }
 
 function closeCamera() {
+  clearTimeout(stallTimer);
   scanning = false;
   scanner.hidden = true;
 
@@ -293,6 +315,12 @@ function readFrame() {
   if (video.readyState < video.HAVE_CURRENT_DATA || !video.videoWidth) {
     requestAnimationFrame(readFrame);
     return;
+  }
+
+  if (!framesSeen) {
+    framesSeen = 1;
+    clearTimeout(stallTimer);
+    scanHint.textContent = 'Looking for a code…';
   }
 
   const context = frame.getContext('2d', { willReadFrequently: true });
