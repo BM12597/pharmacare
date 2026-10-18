@@ -6,6 +6,7 @@ services:
     name: pharmacare
     runtime: python
     plan: free
+    region: frankfurt
     buildCommand: ./build.sh
     startCommand: cd backend && gunicorn config.wsgi:application --workers 1 --timeout 120
 
