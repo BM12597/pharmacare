@@ -217,12 +217,50 @@ async function openCamera() {
 
   scanner.hidden = false;
   scanning = true;
-  scanHint.textContent = 'Looking for a code…';
+  scanHint.textContent = 'Starting the camera…';
+
+  /* iPhones are particular about this, and get it wrong silently: the preview
+     stays black while everything else looks like it worked.
+
+     Three things matter, in this order. The flags go on before the stream,
+     because Safari decides whether a video may play inline when the source is
+     attached, not when play() is called. Then we wait for the first frame to
+     arrive — attaching a stream and playing in the same tick aborts. And the
+     play itself is reported rather than swallowed, so a failure says so on
+     screen instead of looking like a camera that cannot see. */
+
+  video.muted = true;
+  video.playsInline = true;
+  video.setAttribute('playsinline', 'true');
+  video.setAttribute('webkit-playsinline', 'true');   // older iOS
+  video.setAttribute('autoplay', '');
 
   video.srcObject = stream;
-  video.setAttribute('playsinline', 'true');
-  await video.play().catch(() => {});
 
+  await new Promise(resolve => {
+    if (video.readyState >= 1) return resolve();
+    const done = () => { video.removeEventListener('loadedmetadata', done); resolve(); };
+    video.addEventListener('loadedmetadata', done);
+    setTimeout(done, 3000);   // never hang on a camera that says nothing
+  });
+
+  try {
+    await video.play();
+  } catch (error) {
+    // One retry: the first attempt sometimes lands before the element is laid
+    // out, and the second one, a frame later, succeeds.
+    await new Promise(requestAnimationFrame);
+    try {
+      await video.play();
+    } catch (again) {
+      scanning = false;
+      closeCamera();
+      toast('This phone would not start the camera here. Read your code out to the pharmacist instead.');
+      return;
+    }
+  }
+
+  scanHint.textContent = 'Looking for a code…';
   requestAnimationFrame(readFrame);
 }
 
@@ -248,7 +286,11 @@ document.addEventListener('keydown', event => {
 function readFrame() {
   if (!scanning) return;
 
-  if (video.readyState !== video.HAVE_ENOUGH_DATA) {
+  /* HAVE_CURRENT_DATA is enough to copy a frame out. Waiting for
+     HAVE_ENOUGH_DATA, which is about having buffered enough to play through,
+     means nothing for a live camera and on some phones never arrives — the
+     hint then sits on "Looking for a code" forever against a black screen. */
+  if (video.readyState < video.HAVE_CURRENT_DATA || !video.videoWidth) {
     requestAnimationFrame(readFrame);
     return;
   }

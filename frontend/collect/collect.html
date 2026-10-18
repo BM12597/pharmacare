@@ -25,15 +25,24 @@
   <!-- The camera, shown only once the patient asks for it. -->
   <div class="scanner" id="scanner" hidden>
     <div class="scanner-head">
-      <strong>Point at the pharmacist's screen</strong>
+      <span class="scan-brand">
+        <span class="mark" aria-hidden="true"></span>
+        <span class="wordmark">PharmaCare+</span>
+      </span>
       <button class="close-scan" type="button" id="closeScan" aria-label="Stop scanning">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
       </button>
     </div>
 
+    <p class="scan-title">Point at the pharmacist's screen</p>
+
     <div class="viewport">
       <video id="video" playsinline muted></video>
-      <div class="reticle" aria-hidden="true"></div>
+      <div class="reticle" aria-hidden="true">
+        <i class="corner tl"></i><i class="corner tr"></i>
+        <i class="corner bl"></i><i class="corner br"></i>
+        <span class="scan-line"></span>
+      </div>
     </div>
 
     <p class="scan-hint" id="scanHint">Looking for a code…</p>
