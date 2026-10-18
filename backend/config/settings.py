@@ -303,6 +303,13 @@ CSRF_COOKIE_HTTPONLY = False  # the frontend JS reads this token to send it back
 
 LOGIN_URL = "/login/"
 
+# The patient sheet shows the original PDF in a frame beside the typed record,
+# and that frame points back at this same site. Django's default of DENY
+# blocks it, which is why the preview comes up empty with "refused to
+# connect". SAMEORIGIN allows our own pages to frame our own files and still
+# refuses every other site, which is what clickjacking protection is for.
+X_FRAME_OPTIONS = "SAMEORIGIN"
+
 if not DEBUG:
     # Render terminates HTTPS at its own proxy and forwards plain HTTP, so
     # without this Django sees an insecure request, redirects to HTTPS, and
@@ -316,7 +323,6 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
-    X_FRAME_OPTIONS = "DENY"
 
 CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
 
