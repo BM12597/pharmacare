@@ -375,19 +375,27 @@ async function confirmScan(payload) {
   }
 
   try {
-    const response = await fetch(confirmUrl(parts[3]), {
+    const response = await fetch(`${API}confirm/${encodeURIComponent(parts[3])}/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     });
     const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      scanHint.textContent = data.detail || 'That did not work.';
-      toast(data.detail || 'That code did not work.');
+      // The camera stays open. A refused code is nearly always something the
+      // pharmacist can fix in a moment — show a new one, the last one timed
+      // out — and closing the scanner means reading the reason, finding the
+      // button again and starting over for no reason.
+      const why = data.detail || 'That code did not work.';
+      scanHint.textContent = why;
+      toast(why);
+
       setTimeout(() => {
-        closeCamera();
-        load();
-      }, 2200);
+        if (!stream) return;             // they closed it themselves meanwhile
+        scanning = true;
+        scanHint.textContent = 'Looking for a code…';
+        requestAnimationFrame(readFrame);
+      }, 2600);
       return;
     }
 
@@ -395,8 +403,9 @@ async function confirmScan(payload) {
     await load();
     toast('Confirmed. The pharmacist is getting your medicine.');
   } catch (error) {
-    scanHint.textContent = 'Could not reach the pharmacy system.';
-    setTimeout(closeCamera, 2000);
+    scanHint.textContent = `Could not reach the pharmacy system (${error.name}).`;
+    toast('Could not reach the pharmacy system. Read your code out instead.');
+    setTimeout(closeCamera, 3000);
   }
 }
 
