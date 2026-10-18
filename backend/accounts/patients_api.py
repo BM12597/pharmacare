@@ -7,8 +7,8 @@ sent it:
     view and download     admin, doctors, pharmacists
     edit and confirm      doctors only
     upload                admin only
-    delete                nobody, yet — a patient file is not something to
-                          remove from a web page
+    delete                admin only, and it takes the documents, the edit
+                          history and the prescriptions with it
 
 An upload runs as three requests rather than one, so the progress on screen is
 reporting work that has finished rather than animating a guess:
@@ -31,7 +31,9 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
 
 from . import cloud, extract as extraction
-from .models import ActivityLog, Patient, PatientFile, PatientRecordVersion, Role
+from .models import (
+    ActivityLog, Patient, PatientFile, PatientRecordVersion, Prescription, Role,
+)
 
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 
@@ -44,6 +46,11 @@ ACCEPTED_TYPES = {
 VIEW_ROLES = {Role.ADMIN, Role.DOCTOR, Role.PHARMACIST}
 EDIT_ROLES = {Role.DOCTOR}
 UPLOAD_ROLES = {Role.ADMIN}
+DELETE_ROLES = {Role.ADMIN}
+
+# A ceiling on one request, so a mis-click on a select-all box cannot empty the
+# system in a single call.
+DELETE_LIMIT = 50
 
 
 # ---------------------------------------------------------------- guards
@@ -58,6 +65,10 @@ def may_edit(user):
 
 def may_upload(user):
     return bool(user.is_authenticated and (user.is_superuser or user.role in UPLOAD_ROLES))
+
+
+def may_delete(user):
+    return bool(user.is_authenticated and (user.is_superuser or user.role in DELETE_ROLES))
 
 
 def _guard(request, check=may_view, what="open patient files"):
@@ -87,6 +98,7 @@ def permissions_for(user):
         "edit": may_edit(user),
         "upload": may_upload(user),
         "download": may_view(user),
+        "delete": may_delete(user),
     }
 
 
@@ -966,3 +978,168 @@ def download_file(request, file_id):
     # A patient file has no business sitting in a shared cache.
     response["Cache-Control"] = "private, no-store"
     return response
+
+
+# ---------------------------------------------------------------- deleting
+
+def _belongings(patient):
+    """
+    Everything that goes when this patient goes.
+
+    Counted before the delete so the reply can say what was actually removed,
+    rather than the page guessing from what it had on screen.
+    """
+    prescriptions = Prescription.objects.filter(patient=patient)
+
+    return {
+        "documents": patient.documents.count(),
+        "versions": patient.versions.count(),
+        "prescriptions": prescriptions.count(),
+    }
+
+
+def _stored_assets(patient):
+    """The Cloudinary ids behind this patient's documents, for removal after."""
+    return [
+        (document.cloud_public_id, document.cloud_resource_type or "raw", document.original_name)
+        for document in patient.documents.all()
+        if document.cloud_public_id
+    ]
+
+
+@require_POST
+def delete_patients(request):
+    """
+    Remove patients outright: record, documents, edit history, prescriptions.
+
+    Two things are deliberate here.
+
+    The database rows go first, inside one transaction, and the files in
+    Cloudinary are destroyed afterwards. Done the other way round, a failure
+    half way would leave records pointing at files that no longer exist, which
+    looks like data loss and is harder to explain than a leftover file. A file
+    nobody can reach from the system is tidied up; a record that lies is not.
+
+    Stock movements stay. If thirty paracetamol came off the shelf for this
+    patient, the shelf history keeps that line — otherwise the levels stop
+    adding up and a pharmacist chasing a discrepancy finds nothing. The
+    prescription goes; the fact that stock left the building does not.
+    """
+    blocked = _guard(request, may_delete, "delete patient records")
+    if blocked:
+        return blocked
+
+    data, problem = _body(request)
+    if problem:
+        return problem
+
+    wanted = data.get("file_numbers")
+    if not isinstance(wanted, list):
+        return JsonResponse({"detail": "Send file_numbers as a list."}, status=400)
+
+    # De-duplicated, because a page can send the same row twice, and order kept
+    # so the reply reads back in the order the person ticked them.
+    numbers, seen = [], set()
+    for value in wanted:
+        number = str(value or "").strip()
+        if number and number not in seen:
+            seen.add(number)
+            numbers.append(number)
+
+    if not numbers:
+        return JsonResponse({"detail": "Nothing was selected."}, status=400)
+
+    if len(numbers) > DELETE_LIMIT:
+        return JsonResponse(
+            {"detail": f"That is {len(numbers)} patients. {DELETE_LIMIT} at a time is the limit."},
+            status=400,
+        )
+
+    found = {p.file_number: p for p in Patient.objects.filter(file_number__in=numbers)}
+
+    deleted, missing, assets, totals = [], [], [], {"documents": 0, "versions": 0, "prescriptions": 0}
+
+    for number in numbers:
+        patient = found.get(number)
+        if not patient:
+            missing.append(number)
+            continue
+
+        counts = _belongings(patient)
+        assets.extend(_stored_assets(patient))
+        name = patient.full_name
+
+        try:
+            with transaction.atomic():
+                # Prescription.patient is SET_NULL, so prescriptions would
+                # otherwise survive their patient as nameless rows. They are
+                # removed on purpose; the items and the collection code go with
+                # them by cascade.
+                Prescription.objects.filter(patient=patient).delete()
+                # The documents and the version history cascade from here.
+                patient.delete()
+        except Exception as error:
+            return JsonResponse(
+                {
+                    "detail": f"{number} could not be deleted ({type(error).__name__}). "
+                              f"Nothing in this batch was left half-removed.",
+                    "deleted": deleted,
+                },
+                status=500,
+            )
+
+        for key in totals:
+            totals[key] += counts[key]
+
+        deleted.append({"file_number": number, "name": name, **counts})
+
+        ActivityLog.record(
+            ActivityLog.Action.RECORD_DELETED,
+            actor=request.user,
+            subject=number,
+            detail=(f"{name} ({number}) deleted with {counts['documents']} document(s), "
+                    f"{counts['versions']} edit(s) and {counts['prescriptions']} prescription(s)."),
+        )
+
+    # The records are already gone by now, so a storage problem here is worth
+    # naming but is not a failure of the delete.
+    left_behind = []
+    if cloud.is_configured():
+        for public_id, resource_type, original_name in assets:
+            if not cloud.destroy(public_id, resource_type):
+                left_behind.append(original_name or public_id)
+
+    return JsonResponse({
+        "deleted": deleted,
+        "missing": missing,
+        "left_in_storage": left_behind,
+        "totals": totals,
+        "detail": _delete_summary(deleted, missing, left_behind, totals),
+    })
+
+
+def _delete_summary(deleted, missing, left_behind, totals):
+    if not deleted:
+        return "Nothing was deleted — none of those file numbers are on the system."
+
+    count = len(deleted)
+    line = f"{count} patient{'' if count == 1 else 's'} deleted"
+
+    carried = []
+    if totals["documents"]:
+        carried.append(f"{totals['documents']} document{'' if totals['documents'] == 1 else 's'}")
+    if totals["prescriptions"]:
+        carried.append(
+            f"{totals['prescriptions']} prescription{'' if totals['prescriptions'] == 1 else 's'}")
+    if carried:
+        line += f", along with {' and '.join(carried)}"
+    line += "."
+
+    if missing:
+        line += f" {len(missing)} were already gone."
+
+    if left_behind:
+        line += (f" {len(left_behind)} file{'' if len(left_behind) == 1 else 's'} could not be "
+                 f"removed from storage and will need deleting there.")
+
+    return line

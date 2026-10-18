@@ -1147,11 +1147,13 @@ function showHandover(reference, items) {
   panel.hidden = false;
   chime();
 
+  // Five seconds. Long enough for the pharmacist to look up, see it, and know
+  // the hand-over went through without having to catch it.
   clearTimeout(handoverTimer);
   handoverTimer = setTimeout(() => {
     panel.classList.add('out');
     setTimeout(() => { panel.hidden = true; panel.classList.remove('out'); }, 300);
-  }, 2000);
+  }, 5000);
 }
 
 /* Tapping it dismisses it early, for a busy counter. */
@@ -1177,7 +1179,7 @@ async function finishDispense(reference, reason) {
 
     // Anything the server wanted to say — a short-dispensed line, say — still
     // gets said, just after the confirmation rather than instead of it.
-    if (result.detail) setTimeout(() => toast(result.detail), 2200);
+    if (result.detail) setTimeout(() => toast(result.detail), 5400);
 
     await Promise.all([loadQueue(), loadStock()]);
   } catch (error) {

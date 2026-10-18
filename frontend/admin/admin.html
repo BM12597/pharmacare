@@ -172,10 +172,24 @@
 
         <p class="result-count" id="resultCount"></p>
 
+        <!-- Appears only once something is ticked, so the page is not carrying
+             a delete button around in front of someone who only came to look. -->
+        <div class="select-bar" id="selectBar" hidden>
+          <span class="select-count" id="selectCount"></span>
+          <div class="select-acts">
+            <button class="btn ghost" type="button" id="clearSelection"
+                    data-i18n="action.deselect">Clear selection</button>
+            <button class="btn danger" type="button" id="deleteSelected"></button>
+          </div>
+        </div>
+
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
+                <th class="tick-col" id="selectAllCell" hidden>
+                  <input type="checkbox" id="selectAll" aria-label="Select every patient shown" />
+                </th>
                 <th data-i18n="table.patient">Patient</th>
                 <th data-i18n="table.file">File number</th>
                 <th data-i18n="table.conditions">Conditions</th>
@@ -369,6 +383,29 @@
       <footer class="sheet-foot">
         <button class="btn ghost" type="button" id="closeModal" data-i18n="form.cancel">Close</button>
         <span class="foot-note" id="sheetFoot"></span>
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- ==================== ARE YOU SURE ====================
+       Deleting a patient takes the documents, the edit history and the
+       prescriptions with it, and nothing brings them back. So it is spelled
+       out, by name, before it happens. -->
+  <div class="modal-backdrop confirm-backdrop" id="confirmBackdrop">
+    <div class="modal confirm" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+
+      <h2 id="confirmTitle"></h2>
+      <p class="confirm-lead" id="confirmLead"></p>
+
+      <ul class="confirm-list" id="confirmList"></ul>
+
+      <p class="confirm-warn" id="confirmWarn"></p>
+
+      <footer class="confirm-foot">
+        <button class="btn ghost" type="button" id="confirmCancel"
+                data-i18n="form.cancel">Cancel</button>
+        <button class="btn danger" type="button" id="confirmDelete"></button>
       </footer>
 
     </div>

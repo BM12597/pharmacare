@@ -195,6 +195,11 @@ class ActivityLog(models.Model):
         RECORD_UPDATED = "record.updated", "Patient record edited"
         RECORD_CONFIRMED = "record.confirmed", "Patient record confirmed"
 
+        # Deleting a patient throws away the documents, the edit history and
+        # the prescriptions with them. The one thing that survives is this
+        # line, which is the whole reason it is written.
+        RECORD_DELETED = "record.deleted", "Patient record deleted"
+
     action = models.CharField(max_length=40, choices=Action.choices)
     actor = models.ForeignKey(
         "User", null=True, blank=True, on_delete=models.SET_NULL, related_name="actions"

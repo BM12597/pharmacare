@@ -35,6 +35,9 @@ urlpatterns = [
     path("api/patients/files/<int:file_id>/read/", patients_api.read_file, name="patient-file-read"),
     path("api/patients/files/<int:file_id>/extract/", patients_api.extract_file, name="patient-file-extract"),
     path("api/patients/files/<int:file_id>/download/", patients_api.download_file, name="patient-file-download"),
+    # Above the <file_number> pattern below, which would otherwise swallow it
+    # and go looking for a patient called "delete".
+    path("api/patients/delete/", patients_api.delete_patients, name="patients-delete"),
     path("api/patients/<str:file_number>/", patients_api.patient_detail, name="patient-detail"),
     path("api/patients/<str:file_number>/save/", patients_api.update_patient, name="patient-save"),
     path("api/patients/<str:file_number>/confirm/", patients_api.confirm_patient, name="patient-confirm"),

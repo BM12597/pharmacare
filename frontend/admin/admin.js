@@ -15,7 +15,8 @@ const API = {
   overview: '/api/admin/overview/',
   patients: '/api/patients/',
   files: '/api/patients/files/',
-  upload: '/api/patients/upload/'
+  upload: '/api/patients/upload/',
+  deletePatients: '/api/patients/delete/'
 };
 
 const LOGIN_URL = '/login/';
@@ -116,7 +117,13 @@ const STRINGS = {
     'form.cancel': 'Maak toe',
     'status.review': 'Nie bevestig nie', 'status.confirmed': 'Bevestig',
     'stage.store': 'Stoor die lêer', 'stage.read': 'Lees die bladsye',
-    'stage.extract': 'Haal die besonderhede uit', 'stage.record': 'Rekord gereed'
+    'stage.extract': 'Haal die besonderhede uit', 'stage.record': 'Rekord gereed',
+    'action.delete': 'Skrap', 'action.deselect': 'Ontmerk alles',
+    'select.one': '1 pasiënt gemerk', 'select.many': 'pasiënte gemerk',
+    'del.title1': 'Skrap hierdie pasiënt?', 'del.titleN': 'Skrap', 'del.patients': 'pasiënte',
+    'del.lead': 'Die rekord, elke dokument wat opgelaai is, die wysigingsgeskiedenis en enige voorskrifte gaan saam.',
+    'del.warn': 'Dit kan nie ongedaan gemaak word nie. Medisyne wat reeds van die rak af is, bly in die voorraadgeskiedenis.',
+    'del.working': 'Besig om te skrap…', 'del.done': 'Geskrap.'
   },
   zu: {
     'nav.overview': 'Ukubuka konke', 'nav.patients': 'Iziguli', 'nav.files': 'Amafayela', 'nav.settings': 'Izilungiselelo',
@@ -142,7 +149,13 @@ const STRINGS = {
     'form.cancel': 'Vala',
     'status.review': 'Akuqinisekisiwe', 'status.confirmed': 'Kuqinisekisiwe',
     'stage.store': 'Kugcinwa ifayela', 'stage.read': 'Kufundwa amakhasi',
-    'stage.extract': 'Kukhishwa imininingwane', 'stage.record': 'Irekhodi lilungile'
+    'stage.extract': 'Kukhishwa imininingwane', 'stage.record': 'Irekhodi lilungile',
+    'action.delete': 'Susa', 'action.deselect': 'Sula okukhethiwe',
+    'select.one': 'Isiguli esi-1 esikhethiwe', 'select.many': 'iziguli ezikhethiwe',
+    'del.title1': 'Susa lesi siguli?', 'del.titleN': 'Susa', 'del.patients': 'iziguli',
+    'del.lead': 'Irekhodi, wonke amadokhumenti alayishwe, umlando wezinguquko kanye nanoma yimaphi ama-prescription ahamba nalo.',
+    'del.warn': 'Lokhu akunakuhlehliswa. Imithi esehlile eshelufini ihlala emlandweni wesitoko.',
+    'del.working': 'Kususwa…', 'del.done': 'Kususiwe.'
   },
   nso: {
     'nav.overview': 'Kakaretšo', 'nav.patients': 'Balwetši', 'nav.files': 'Difaele', 'nav.settings': 'Dipeakanyo',
@@ -168,7 +181,13 @@ const STRINGS = {
     'form.cancel': 'Tswalela',
     'status.review': 'Ga se netefatšwe', 'status.confirmed': 'Netefaditšwe',
     'stage.store': 'Go boloka faele', 'stage.read': 'Go bala matlakala',
-    'stage.extract': 'Go ntšha dintlha', 'stage.record': 'Rekoto e lokile'
+    'stage.extract': 'Go ntšha dintlha', 'stage.record': 'Rekoto e lokile',
+    'action.delete': 'Phumula', 'action.deselect': 'Hlwekiša kgetho',
+    'select.one': 'Molwetši o 1 o kgethilwe', 'select.many': 'balwetši bao kgethilwego',
+    'del.title1': 'Phumula molwetši yo?', 'del.titleN': 'Phumula', 'del.patients': 'balwetši',
+    'del.lead': 'Rekoto, tokumente ye nngwe le ye nngwe ye e rometšwego, histori ya diphetošo le dingwalwa tša dihlare di sepela gotee le yona.',
+    'del.warn': 'Se se ka se busetšwe morago. Dihlare tše šetše di tšwile šelefong di dula histori ya setoko.',
+    'del.working': 'Go phumula…', 'del.done': 'Phumotšwe.'
   }
 };
 
@@ -531,6 +550,100 @@ const patientSearch = document.getElementById('patientSearch');
 const conditionFilter = document.getElementById('conditionFilter');
 const resultCount = document.getElementById('resultCount');
 
+/* ==================================================================
+   Selecting patients to delete
+
+   The ticks live in a Set of file numbers rather than being read off the
+   checkboxes, because the table is rebuilt from scratch on every search and
+   anything held in the DOM would be lost with it. A patient ticked, then
+   searched away from, then searched back to, is still ticked.
+   ================================================================== */
+
+const picked = new Set();
+
+const selectBar = document.getElementById('selectBar');
+const selectCount = document.getElementById('selectCount');
+const selectAllCell = document.getElementById('selectAllCell');
+const selectAllBox = document.getElementById('selectAll');
+const deleteSelected = document.getElementById('deleteSelected');
+
+function canDelete() {
+  return Boolean(state.can && state.can.delete);
+}
+
+/* Five columns plus the tick column, when there is one. The empty-state cell
+   has to span them all or the message sits under the first column. */
+function columnCount() {
+  return canDelete() ? 7 : 6;
+}
+
+/* Only the rows on screen can be ticked, so select-all means these. */
+function shownNumbers() {
+  return state.patients.map(p => p.file_number);
+}
+
+function drawSelection() {
+  selectAllCell.hidden = !canDelete();
+
+  if (!canDelete()) {
+    selectBar.hidden = true;
+    return;
+  }
+
+  const count = picked.size;
+
+  selectBar.hidden = count === 0;
+  selectCount.textContent = count === 1
+    ? t('select.one', '1 patient selected')
+    : `${nf().format(count)} ${t('select.many', 'patients selected')}`;
+
+  // The number in brackets, so the button says exactly what it will do.
+  deleteSelected.textContent = `${t('action.delete', 'Delete')} (${nf().format(count)})`;
+
+  const shown = shownNumbers();
+  const allShown = shown.length > 0 && shown.every(number => picked.has(number));
+  selectAllBox.checked = allShown;
+  selectAllBox.indeterminate = !allShown && shown.some(number => picked.has(number));
+}
+
+function setPicked(fileNumber, on) {
+  if (on) picked.add(fileNumber); else picked.delete(fileNumber);
+
+  // Found by reading the boxes rather than by building a selector out of the
+  // file number. A file number is whatever was printed on the form, and
+  // anything with a quote or a bracket in it would break a selector — or
+  // worse, match something else.
+  for (const box of patientRows.querySelectorAll('input[data-pick]')) {
+    if (box.dataset.pick !== fileNumber) continue;
+    box.checked = on;
+    box.closest('tr').classList.toggle('picked', on);
+    break;
+  }
+
+  drawSelection();
+}
+
+function clearPicked() {
+  picked.clear();
+  patientRows.querySelectorAll('input[data-pick]').forEach(box => {
+    box.checked = false;
+    box.closest('tr').classList.remove('picked');
+  });
+  drawSelection();
+}
+
+patientRows.addEventListener('change', event => {
+  const box = event.target.closest('input[data-pick]');
+  if (box) setPicked(box.dataset.pick, box.checked);
+});
+
+selectAllBox.addEventListener('change', () => {
+  const on = selectAllBox.checked;
+  shownNumbers().forEach(number => setPicked(number, on));
+});
+
+document.getElementById('clearSelection').addEventListener('click', clearPicked);
+
 function statusTag(patient) {
   return patient.needs_review
     ? `<span class="tag review">${t('status.review', 'Not confirmed')}</span>`
@@ -538,19 +651,27 @@ function statusTag(patient) {
 }
 
 function renderPatients() {
+  const span = columnCount();
+
   if (state.loading) {
-    patientRows.innerHTML = `<tr><td colspan="6" class="empty">${t('loading', 'Loading…')}</td></tr>`;
+    patientRows.innerHTML = `<tr><td colspan="${span}" class="empty">${t('loading', 'Loading…')}</td></tr>`;
     resultCount.textContent = '';
     return;
   }
 
   if (state.error) {
-    patientRows.innerHTML = `<tr><td colspan="6" class="empty">${esc(state.error)}</td></tr>`;
+    patientRows.innerHTML = `<tr><td colspan="${span}" class="empty">${esc(state.error)}</td></tr>`;
     return;
   }
 
   patientRows.innerHTML = state.patients.length ? state.patients.map(p => `
-    <tr>
+    <tr${picked.has(p.file_number) ? ' class="picked"' : ''}>
+      ${canDelete() ? `
+      <td class="tick-col">
+        <input type="checkbox" class="tick" data-pick="${esc(p.file_number)}"
+               ${picked.has(p.file_number) ? 'checked' : ''}
+               aria-label="${esc(p.full_name)}" />
+      </td>` : ''}
       <td>
         <div class="who">
           <span class="initials">${esc(initials(p.full_name))}</span>
@@ -572,7 +693,7 @@ function renderPatients() {
         </div>
       </td>
     </tr>`).join('')
-    : `<tr><td colspan="6" class="empty">${
+    : `<tr><td colspan="${span}" class="empty">${
         state.total
           ? t('empty.search', 'No patient file matches that search. Check the spelling or clear the filter.')
           : t('empty.patients', 'No patient files yet. Upload one from the Files section and the details are read out of it.')
@@ -581,6 +702,8 @@ function renderPatients() {
   resultCount.textContent = state.total
     ? `${nf().format(state.shown)} ${t('result.of', 'of')} ${nf().format(state.total)} ${t('result.files', 'files')}`
     : '';
+
+  drawSelection();
 }
 
 /* The search runs on the server, so a long patient list is not pulled into
@@ -865,8 +988,98 @@ backdrop.addEventListener('click', event => { if (event.target === backdrop) clo
 
 document.addEventListener('keydown', event => {
   if (event.key !== 'Escape') return;
+  if (confirmBackdrop.classList.contains('open')) { closeConfirm(); return; }
   if (backdrop.classList.contains('open')) closeModal();
   closeDrawer();
+});
+
+/* ==================================================================
+   Deleting patients
+
+   Nothing is sent until the names are on screen and the button has been
+   pressed a second time. The server checks the role again and does the work in
+   one transaction, so a half-deleted patient is not a state this can reach.
+   ================================================================== */
+
+const confirmBackdrop = document.getElementById('confirmBackdrop');
+const confirmDeleteBtn = document.getElementById('confirmDelete');
+let deleting = false;
+
+function closeConfirm() {
+  if (deleting) return;          // not mid-request
+  confirmBackdrop.classList.remove('open');
+}
+
+function openConfirm() {
+  const numbers = [...picked];
+  if (!numbers.length) return;
+
+  const count = numbers.length;
+  const byNumber = new Map(state.patients.map(p => [p.file_number, p]));
+
+  document.getElementById('confirmTitle').textContent = count === 1
+    ? t('del.title1', 'Delete this patient?')
+    : `${t('del.titleN', 'Delete')} ${nf().format(count)} ${t('del.patients', 'patients')}?`;
+
+  document.getElementById('confirmLead').textContent = t('del.lead',
+    'The record, every document uploaded for it, the edit history and any prescriptions written go with it.');
+
+  // Named, not counted. "Delete 3 patients" is easy to agree to by accident;
+  // three names are not.
+  document.getElementById('confirmList').innerHTML = numbers.map(number => {
+    const patient = byNumber.get(number);
+    return `<li><strong>${esc(patient ? patient.full_name : number)}</strong> <span>${esc(number)}</span></li>`;
+  }).join('');
+
+  document.getElementById('confirmWarn').textContent = t('del.warn',
+    'This cannot be undone. Medicine already taken off the shelf stays in the stock history.');
+
+  confirmDeleteBtn.textContent = `${t('action.delete', 'Delete')} (${nf().format(count)})`;
+  confirmDeleteBtn.disabled = false;
+
+  confirmBackdrop.classList.add('open');
+  document.getElementById('confirmCancel').focus();
+}
+
+async function runDelete() {
+  const numbers = [...picked];
+  if (!numbers.length || deleting) return;
+
+  deleting = true;
+  confirmDeleteBtn.disabled = true;
+  confirmDeleteBtn.textContent = t('del.working', 'Deleting…');
+
+  try {
+    const result = await callApi(API.deletePatients, {
+      method: 'POST',
+      body: JSON.stringify({ file_numbers: numbers })
+    });
+
+    // Only what the server says went, comes off the list. Anything it refused
+    // stays ticked, so a second attempt is one press away.
+    (result.deleted || []).forEach(row => picked.delete(row.file_number));
+    (result.missing || []).forEach(number => picked.delete(number));
+
+    deleting = false;
+    confirmBackdrop.classList.remove('open');
+    toast(result.detail || t('del.done', 'Deleted.'));
+
+    // The files panel and the counters on the overview both change, so the
+    // page is reloaded rather than patched in two places.
+    await Promise.all([loadPatients(), loadFiles(), loadOverview()]);
+    render();
+  } catch (error) {
+    deleting = false;
+    confirmBackdrop.classList.remove('open');
+    toast(error.message);
+  }
+}
+
+deleteSelected.addEventListener('click', openConfirm);
+document.getElementById('confirmCancel').addEventListener('click', closeConfirm);
+confirmDeleteBtn.addEventListener('click', runDelete);
+confirmBackdrop.addEventListener('click', event => {
+  if (event.target === confirmBackdrop) closeConfirm();
 });
 
 /* ==================================================================
