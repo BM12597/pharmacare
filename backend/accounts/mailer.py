@@ -1,9 +1,16 @@
 """
 Sending the collection email.
 
-Brevo is used as a plain SMTP relay rather than through their SDK, so there is
-no extra dependency and the same code works against any mail server — swap
-four lines in .env and it posts through something else.
+Two ways out, and the first one that is configured wins:
+
+  HTTPS   a POST to Brevo's API on port 443. Used when BREVO_API_KEY is set.
+  SMTP    an ordinary mail server on port 587, which is what .env has
+          described all along and works against any provider.
+
+HTTPS exists because hosts block outbound SMTP. Render's free instances close
+ports 25, 465 and 587 to stop their servers being used for spam, so a perfectly
+correct SMTP configuration simply times out there. Port 443 is never blocked —
+it is the same port the browser is already using to reach the site.
 
 Nothing here raises. A prescription that was written correctly must not fail
 because a mail server was briefly unreachable; the send is attempted, the
@@ -11,8 +18,11 @@ outcome is recorded on the collection, and the pharmacy is told whether the
 patient actually got their code.
 """
 
+import json
 import logging
 import re
+import urllib.error
+import urllib.request
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives, get_connection
@@ -20,9 +30,34 @@ from django.utils.html import escape
 
 logger = logging.getLogger(__name__)
 
+BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
+TIMEOUT_SECONDS = 15
+
+
+def _api_key():
+    return getattr(settings, "BREVO_API_KEY", "") or ""
+
 
 def is_configured():
+    if _api_key():
+        return True
     return bool(getattr(settings, "EMAIL_HOST", "") and getattr(settings, "EMAIL_HOST_USER", ""))
+
+
+def _sender():
+    """
+    Split "PharmaCare+ <noreply@example.com>" into the two fields the API wants.
+
+    Django's SMTP path accepts the combined form; Brevo's API does not, so it
+    is pulled apart here rather than asking for the address twice in .env.
+    """
+    raw = (getattr(settings, "DEFAULT_FROM_EMAIL", "") or "").strip()
+
+    match = re.match(r"^\s*(.*?)\s*<([^>]+)>\s*$", raw)
+    if match:
+        return match.group(1).strip(' "') or "PharmaCare+", match.group(2).strip()
+
+    return "PharmaCare+", raw
 
 
 def _plain(prescription, collection, link):
@@ -146,19 +181,94 @@ def send_collection_email(prescription, collection):
                        "and the code will go out automatically.")
 
     link = collection_link(collection)
+    subject = f"Your prescription {prescription.reference} is ready at the pharmacy"
+    text = _plain(prescription, collection, link)
+    html = _html(prescription, collection, link)
+
+    if _api_key():
+        return _send_over_https(address, prescription.patient_name, subject, text, html)
+
+    return _send_over_smtp(address, subject, text, html)
+
+
+def _send_over_https(address, name, subject, text, html):
+    """
+    Post the message to Brevo. Used wherever outbound SMTP is blocked.
+
+    urllib rather than Brevo's SDK, for the same reason the Cloudinary upload
+    is hand-rolled: one less dependency to install on a 512 MB box, and the
+    request is a dozen lines.
+    """
+    sender_name, sender_email = _sender()
+
+    if not sender_email:
+        return False, "No sender address is configured. Set MAIL_FROM to a verified sender."
+
+    payload = json.dumps({
+        "sender": {"name": sender_name, "email": sender_email},
+        "to": [{"email": address, "name": name or address}],
+        "subject": subject,
+        "textContent": text,
+        "htmlContent": html,
+    }).encode()
+
+    request = urllib.request.Request(
+        BREVO_API_URL,
+        data=payload,
+        headers={
+            "accept": "application/json",
+            "content-type": "application/json",
+            "api-key": _api_key(),
+        },
+    )
 
     try:
+        with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
+            json.loads(response.read() or b"{}")
+        return True, ""
+
+    except urllib.error.HTTPError as error:
+        # Brevo explains itself properly, and the reason is nearly always
+        # something the person can fix: an unverified sender, a bad key.
+        detail = ""
+        try:
+            detail = json.loads(error.read() or b"{}").get("message", "")
+        except Exception:
+            pass
+
+        logger.warning("Brevo rejected the email to %s: %s %s", address, error.code, detail)
+
+        if error.code in (401, 403):
+            return False, ("Brevo would not accept the API key. Check BREVO_API_KEY — it "
+                           "starts with xkeysib and is not the SMTP key.")
+
+        return False, f"Brevo would not send the email{f': {detail}' if detail else ''}."
+
+    except Exception as error:
+        logger.warning("Collection email to %s failed: %s", address, error)
+        return False, f"The email could not be sent ({type(error).__name__}). The code still works."
+
+
+def _send_over_smtp(address, subject, text, html):
+    """The ordinary mail server path, for anywhere that allows port 587."""
+    try:
         message = EmailMultiAlternatives(
-            subject=f"Your prescription {prescription.reference} is ready at the pharmacy",
-            body=_plain(prescription, collection, link),
+            subject=subject,
+            body=text,
             from_email=getattr(settings, "DEFAULT_FROM_EMAIL", settings.EMAIL_HOST_USER),
             to=[address],
             connection=get_connection(fail_silently=False),
         )
-        message.attach_alternative(_html(prescription, collection, link), "text/html")
+        message.attach_alternative(html, "text/html")
         message.send()
     except Exception as error:
         logger.warning("Collection email to %s failed: %s", address, error)
+
+        if type(error).__name__ == "TimeoutError":
+            return False, ("The mail server could not be reached (timed out). Hosts often "
+                           "block outbound SMTP — set BREVO_API_KEY to send over HTTPS "
+                           "instead. The code still works.")
+
         return False, f"The email could not be sent ({type(error).__name__}). The code still works."
 
     return True, ""

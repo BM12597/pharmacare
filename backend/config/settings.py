@@ -223,6 +223,12 @@ CLOUDINARY_API_SECRET = env("CLOUDINARY_API_SECRET", "")
 # With nothing configured the system still works: the prescription is written,
 # the code exists, and the pharmacy is told the patient did not get an email.
 
+# Brevo's HTTPS API, used in place of SMTP when it is set. Hosts commonly
+# block outbound SMTP (Render's free instances close ports 25, 465 and 587),
+# and port 443 never is. Get it from Brevo under SMTP & API -> API keys; it
+# begins with xkeysib and is NOT the SMTP key.
+BREVO_API_KEY = env("BREVO_API_KEY", "")
+
 EMAIL_HOST_USER_SET = bool(env("BREVO_SMTP_USER", "") and env("BREVO_SMTP_KEY", ""))
 
 # With no SMTP details the mail goes to the terminal instead of nowhere. The
