@@ -363,6 +363,21 @@
     </div>
   </div>
 
+  <!-- Shown for a moment when a hand-over completes, so the pharmacist can
+       look away from the screen and still know it went through. -->
+  <div class="handover" id="handover" hidden>
+    <div class="handover-card">
+      <span class="handover-tick" aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13 24.5 20.5 32 35 17.5" pathLength="1" />
+        </svg>
+      </span>
+      <strong id="handoverTitle">Medication dispensed successfully</strong>
+      <span id="handoverWhat"></span>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script src="/static/pharmacy/pharmacy.js"></script>

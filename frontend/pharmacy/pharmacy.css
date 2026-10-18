@@ -36,6 +36,11 @@ body.dark {
 
 * { box-sizing: border-box; }
 
+/* The browser's own rule for [hidden] is display:none, and any author rule
+   that sets display beats it. Several panels here set one, so this keeps the
+   attribute meaning what it says. */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   color: var(--ink);
@@ -1067,4 +1072,71 @@ body.dark .collect-state.done { color: #0e1210; }
 
 @media (max-width: 560px) {
   .qr-holder { width: 190px; height: 190px; }
+}
+
+
+/* ==================================================================
+   Hand-over confirmation
+
+   A pharmacist turning to the shelf should not have to check the screen to
+   know the dispense went through. Big tick, one line, gone in two seconds.
+   ================================================================== */
+
+.handover {
+  position: fixed; inset: 0; z-index: 70;
+  display: grid; place-items: center;
+  background: rgba(17, 18, 15, .34);
+  animation: handoverIn .18s ease-out;
+}
+
+.handover.out { animation: handoverOut .3s ease-in forwards; }
+
+.handover-card {
+  display: grid; justify-items: center; gap: 6px;
+  width: min(86vw, 330px);
+  padding: 34px 28px 28px;
+  text-align: center;
+  background: var(--surface);
+  border-radius: 22px;
+  box-shadow: 0 30px 70px rgba(15, 32, 26, .3);
+  animation: handoverPop .36s cubic-bezier(.2, 1.3, .4, 1);
+}
+
+.handover-tick {
+  display: grid; place-items: center;
+  width: 76px; height: 76px;
+  margin-bottom: 12px;
+  color: var(--surface);
+  background: var(--green);
+  border-radius: 50%;
+}
+
+body.dark .handover-tick { color: #0e1210; }
+
+.handover-tick svg { width: 46px; height: 46px; }
+
+/* Drawn rather than simply appearing: the stroke is one unit long, so it can
+   be dashed and then uncovered. */
+.handover-tick path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: tickDraw .4s .12s cubic-bezier(.65, 0, .35, 1) forwards;
+}
+
+.handover-card strong { font-size: 17px; font-weight: 800; letter-spacing: -.02em; }
+.handover-card span { color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+@keyframes handoverIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes handoverOut { to { opacity: 0; } }
+
+@keyframes handoverPop {
+  from { opacity: 0; transform: scale(.88); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes tickDraw { to { stroke-dashoffset: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .handover, .handover-card { animation: none; }
+  .handover-tick path { animation: none; stroke-dashoffset: 0; }
 }

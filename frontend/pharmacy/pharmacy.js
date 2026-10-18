@@ -544,6 +544,9 @@ backdrop.addEventListener('click', event => { if (event.target === backdrop) clo
 document.getElementById('dispenseButton').addEventListener('click', async () => {
   if (!openScript) return;
 
+  // This click is the permission to make a sound later.
+  primeSound();
+
   const needsConfirm = openScript.severity === 'severe' &&
     document.getElementById('setConfirmSevere').checked;
 
@@ -1071,6 +1074,94 @@ async function armCollection(reference) {
 }
 
 /* The stock half, once the patient has confirmed. */
+
+/* ==================================================================
+   Hand-over confirmation
+
+   The tick and the chime both fire at the same moment, for the same reason:
+   a pharmacist is usually looking at the shelf or the patient rather than
+   the screen when a dispense completes.
+   ================================================================== */
+
+let audio = null;
+
+/* Browsers only allow sound that a person asked for, so the audio context is
+   opened on the Dispense press — a real click — and kept. The chime itself
+   plays seconds later, when the patient confirms, which on its own would be
+   refused as unprompted noise. */
+function primeSound() {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    if (!audio) audio = new Ctx();
+    if (audio.state === 'suspended') audio.resume();
+  } catch (error) {
+    audio = null;   // no sound on this browser; the tick still shows
+  }
+}
+
+/* Two rising notes, short and soft. Synthesised rather than loaded: it is a
+   few lines, there is no file to serve, and it cannot fail to download at
+   the one moment it is needed. */
+function chime() {
+  if (!audio || audio.state !== 'running') return;
+
+  const now = audio.currentTime;
+
+  [
+    { at: 0,     hz: 1318.5, hold: 0.09 },   // E6
+    { at: 0.085, hz: 1760.0, hold: 0.22 }    // A6
+  ].forEach(note => {
+    const osc = audio.createOscillator();
+    const gain = audio.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.value = note.hz;
+
+    // Quick in, slow out. A square-edged note sounds like an error beep.
+    gain.gain.setValueAtTime(0.0001, now + note.at);
+    gain.gain.exponentialRampToValueAtTime(0.16, now + note.at + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + note.at + note.hold);
+
+    osc.connect(gain).connect(audio.destination);
+    osc.start(now + note.at);
+    osc.stop(now + note.at + note.hold + 0.02);
+  });
+}
+
+let handoverTimer;
+
+function showHandover(reference, items) {
+  const panel = document.getElementById('handover');
+  if (!panel) return;
+
+  document.getElementById('handoverTitle').textContent =
+    t('handover.title', 'Medication dispensed successfully');
+
+  const count = Array.isArray(items) ? items.length : 0;
+  document.getElementById('handoverWhat').textContent =
+    `${reference}${count ? ` · ${count} ${count === 1
+      ? t('handover.item', 'item') : t('handover.items', 'items')}` : ''}`;
+
+  panel.classList.remove('out');
+  panel.hidden = false;
+  chime();
+
+  clearTimeout(handoverTimer);
+  handoverTimer = setTimeout(() => {
+    panel.classList.add('out');
+    setTimeout(() => { panel.hidden = true; panel.classList.remove('out'); }, 300);
+  }, 2000);
+}
+
+/* Tapping it dismisses it early, for a busy counter. */
+document.getElementById('handover').addEventListener('click', () => {
+  clearTimeout(handoverTimer);
+  const panel = document.getElementById('handover');
+  panel.hidden = true;
+  panel.classList.remove('out');
+});
+
 async function finishDispense(reference, reason) {
   try {
     const result = await callApi(
@@ -1081,8 +1172,13 @@ async function finishDispense(reference, reason) {
       }
     );
 
-    toast(result.detail || `${reference} ${t('toast.dispensed', 'dispensed')}`);
     closeModal();
+    showHandover(reference, result.prescription && result.prescription.items);
+
+    // Anything the server wanted to say — a short-dispensed line, say — still
+    // gets said, just after the confirmation rather than instead of it.
+    if (result.detail) setTimeout(() => toast(result.detail), 2200);
+
     await Promise.all([loadQueue(), loadStock()]);
   } catch (error) {
     toast(error.message);
